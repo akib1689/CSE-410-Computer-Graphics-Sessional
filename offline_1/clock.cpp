@@ -1,7 +1,8 @@
 #define _USE_MATH_DEFINES
 #define ANGLE_INCREMENT 6.0
 #define PI 3.14159265358979323846
-#define HIGH_BOB_ANGLE 30.0
+#define HIGH_BOB_ANGLE 15.0
+#define HOUR_ANGLE 30.0
 
 #include <GL/glut.h> // GLUT, includes glu.h and gl.h
 #include <math.h>    // for tanf and cosf function
@@ -49,25 +50,23 @@ void display() {
   glScalef(0.5f, 0.5f, 0.5f);
   // draw the clock
   draw_clock();
-  // draw the pendulum
-  glRotatef(pendulum_angle, 0.0f, 0.0f, 1.0f);
-  draw_pendulum();
-  // reverse the translation
-  glRotatef(-pendulum_angle, 0.0f, 0.0f, 1.0f);
   // reverse the translation
   glScalef(2.0f, 2.0f, 2.0f);
   glTranslatef(0.0f, -0.5f, 0.0f);
+  // translate to the pendulum position
+  glRotatef(pendulum_angle, 0.0f, 0.0f, 1.0f);
+  // draw the pendulum
+  draw_pendulum();
+  // reverse the translation
+  glRotatef(-pendulum_angle, 0.0f, 0.0f, 1.0f);
 
   glFlush(); // Render now
 }
 /**
  * calculation of the pendulum angle:
  * time period of the pendulum = 2 seconds
- * angle of the pendulum = 30 degrees
- * so if x amount of time is passed, the pendulum will rotate by
- * (x/2)*30 degrees = x*15 degrees
- * then the angle is converted into angles between -30 to 30 degrees
- * by the direction of the pendulum
+ * angular frequency = 2 * PI / time period = PI
+ * pendulum angle = HIGH_BOB_ANGLE * cos(angular frequency * time)
  */
 void idle_handler() {
   // get the current time
@@ -76,18 +75,11 @@ void idle_handler() {
   // find the difference between two clock ticks
   double time_diff = (double)(now - last_idle_time) / CLOCKS_PER_SEC;
   // debug print
-  // advance the rotation of the pendulum by that amount
-  pendulum_angle += time_diff * 15.0 * pendulum_direction;
-  // sanity check (reverse the direction if the pendulum reaches the maximum)
-  if (pendulum_angle >= HIGH_BOB_ANGLE) {
-    pendulum_direction = -1;
-  } else if (pendulum_angle <= -HIGH_BOB_ANGLE) {
-    pendulum_direction = 1;
-  }
-  //   cout << "time diff: " << time_diff << endl;
-  //   cout << "pendulum angle: " << pendulum_angle << endl;
-  // update the last idle time
-  last_idle_time = now;
+  // cout << "time diff: " << time_diff << endl;
+  // calculate the pendulum angle
+  pendulum_angle = HIGH_BOB_ANGLE * cos(PI * time_diff);
+  // debug print
+  // cout << "pendulum angle: " << pendulum_angle << endl;
   glutPostRedisplay();
 }
 
@@ -95,8 +87,7 @@ void idle_handler() {
  *  Handler for window re-size event. Called back when the window first appears
  * and whenever the window is re-sized with its new width and height
  */
-void reshape(GLsizei width,
-             GLsizei height) { // GLsizei for non-negative integer
+void reshape(GLsizei width, GLsizei height) { // GLsizei for non-negative integer
   // Compute aspect ratio of the new window
   if (height == 0)
     height = 1; // To prevent divide by 0
@@ -111,22 +102,22 @@ void reshape(GLsizei width,
   if (width >= height) {
     // aspect >= 1, set the height from -1 to 1, with larger width
     gluOrtho2D(-1.0 * aspect, 1.0 * aspect, -1.0, 1.0);
-  } else {
+  }
+  else {
     // aspect < 1, set the width to -1 to 1, with larger height
     gluOrtho2D(-1.0, 1.0, -1.0 / aspect, 1.0 / aspect);
   }
 }
 
 /* Main function: GLUT runs as a console application starting at main()  */
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   // get the current time
   time_t now = time(0);
   last_idle_time = clock();
   // convert the current time to local time
-  tm *local_time = localtime(&now);
-  // calculate the degree of rotation for the hour hand, minute hand and second
-  // hand
-  hour_angle = (local_time->tm_hour % 12) * 30.0 + (local_time->tm_min / 2.0);
+  tm* local_time = localtime(&now);
+  // calculate the degree of rotation for the hour hand, minute hand and second hand
+  hour_angle = (local_time->tm_hour % 12) * HOUR_ANGLE + (local_time->tm_min / 2.0);
   minute_angle = local_time->tm_min * 6.0 + (local_time->tm_sec / 10.0);
   second_angle = local_time->tm_sec * 6.0;
   // adjust the hour angle the hour and minutes hand by 90 degrees
@@ -135,31 +126,26 @@ int main(int argc, char **argv) {
   second_angle -= 90.0;
 
   // debug print
-  cout << "hour angle: " << hour_angle << endl;
-  cout << "minute angle: " << minute_angle << endl;
+  // cout << "hour angle: " << hour_angle << endl;
+  // cout << "minute angle: " << minute_angle << endl;
 
   // print various components of tm structure.
-  cout << "Time: " << local_time->tm_hour << ":";
-  cout << local_time->tm_min << ":";
-  cout << local_time->tm_sec << endl;
+  // cout << "Time: " << local_time->tm_hour << ":"
+  //   << local_time->tm_min << ":" << local_time->tm_sec << endl;
 
   glutInit(&argc, argv);        // Initialize GLUT
   glutInitWindowSize(640, 640); // Set the window's initial width & height
 
-  glutInitWindowPosition(50,
-                         50); // Position the window's initial top-left corner
+  glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
 
   glutCreateWindow("Offline 1: Clock"); // Create a window with the given title
-  glutDisplayFunc(
-      display); // Register display callback handler for window re-paint
+  glutDisplayFunc(display);             // Register display callback handler for window re-paint
 
-  glutReshapeFunc(
-      reshape); // Register callback handler for window re-size event
+  glutReshapeFunc(reshape); // Register callback handler for window re-size event
 
-  glutIdleFunc(
-      idle_handler); // Register callback handler if no other event occurs
+  glutIdleFunc(idle_handler);          // Register callback handler if no other event occurs
   glutTimerFunc(0, second_handler, 0); // First timer call immediately
-  glutMainLoop(); // Enter the infinitely event-processing loop
+  glutMainLoop();                      // Enter the infinitely event-processing loop
   return 0;
 }
 
@@ -234,6 +220,24 @@ void draw_clock() {
 
   // draw the outer circle
   draw_circle(0.0f, 0.0f, 0.9f, 100, false);
+  draw_circle(0.0f, 0.0f, 1.0f, 100, false);
+
+  // draw the inner markings on hour lines
+  for (int i = 0; i < 12; i++) {
+    glRotatef(HOUR_ANGLE, 0.0f, 0.0f, 1.0f);
+    glBegin(GL_LINES);
+    // for the 12, 3, 6, 9 lines 
+    if (i % 3 == 2) {
+      glVertex2f(0.7f, 0.0f);
+      glVertex2f(0.9f, 0.0f);
+    }
+    else {
+      glVertex2f(0.8f, 0.0f);
+      glVertex2f(0.9f, 0.0f);
+    }
+    glEnd();
+  }
+
 }
 
 /**
@@ -250,12 +254,16 @@ void draw_circle(float cx, float cy, float r, int num_segments, bool fill) {
 
   float y = 0;
   glLineWidth(2);
-  if (fill) {
+  if (fill)
+  {
     glBegin(GL_POLYGON);
-  } else {
+  }
+  else
+  {
     glBegin(GL_LINE_LOOP);
   }
-  for (int ii = 0; ii < num_segments; ii++) {
+  for (int ii = 0; ii < num_segments; ii++)
+  {
     glVertex2f(x + cx, y + cy); // output vertex
 
     // calculate the tangential vector
@@ -315,13 +323,14 @@ void second_handler(int value) {
   glutTimerFunc(1000, second_handler, 0);
 }
 
-void draw_pendulum() {
+void draw_pendulum()
+{
   // draw the pendulum rod
   glBegin(GL_LINES);
-  glVertex2f(0.0f, -0.0f);
-  glVertex2f(0.0f, -1.0f);
+  glVertex2f(0.0f, 0.0f);
+  glVertex2f(0.0f, -0.7f);
   glEnd();
 
   // draw the bob
-  draw_circle(0.0f, -1.0f, 0.1f, 50, true);
+  draw_circle(0.0f, -0.7f, 0.1f, 50, true);
 }
