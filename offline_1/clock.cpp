@@ -3,6 +3,10 @@
 #define PI 3.14159265358979323846
 #define HIGH_BOB_ANGLE 15.0
 #define HOUR_ANGLE 30.0
+#define HOUR_ANGLE_PER_MINUTES 0.5
+#define MINUTE_ANGLE 6.0
+#define MINUTE_ANGLE_PER_SECONDS 0.1
+#define SECOND_ANGLE 6.0
 
 #include <GL/glut.h> // GLUT, includes glu.h and gl.h
 #include <math.h>    // for tanf and cosf function
@@ -117,9 +121,9 @@ int main(int argc, char** argv) {
   // convert the current time to local time
   tm* local_time = localtime(&now);
   // calculate the degree of rotation for the hour hand, minute hand and second hand
-  hour_angle = (local_time->tm_hour % 12) * HOUR_ANGLE + (local_time->tm_min / 2.0);
-  minute_angle = local_time->tm_min * 6.0 + (local_time->tm_sec / 10.0);
-  second_angle = local_time->tm_sec * 6.0;
+  hour_angle = (local_time->tm_hour % 12) * HOUR_ANGLE + (local_time->tm_min * HOUR_ANGLE_PER_MINUTES);
+  minute_angle = local_time->tm_min * MINUTE_ANGLE + (local_time->tm_sec * MINUTE_ANGLE_PER_SECONDS);
+  second_angle = local_time->tm_sec * SECOND_ANGLE;
   // adjust the hour angle the hour and minutes hand by 90 degrees
   hour_angle -= 90.0;
   minute_angle -= 90.0;
@@ -237,6 +241,15 @@ void draw_clock() {
     }
     glEnd();
   }
+
+  // the borders
+  glBegin(GL_LINE_LOOP);
+  glVertex2f(-1.0f, 1.0f);
+  glVertex2f(1.0f, 1.0f);
+  glVertex2f(1.0f, -1.5f);
+  glVertex2f(0.0f, -2.0f);
+  glVertex2f(-1.0f, -1.5f);
+  glEnd();
 
 }
 
