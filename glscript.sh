@@ -1,5 +1,6 @@
-# check if the number of arguments is 1
-if [ $# -ne 1 ]
+# ensure the number of argument is not zero
+# if it is zero, print the usage and exit
+if [ $# -eq 0 ]
 then
     echo "Usage: $0 <filename>"
     exit 1
@@ -34,8 +35,15 @@ fi
 
 filename=$(echo $1 | cut -d'.' -f1)
 
+# for all the files passed to the script
+gpp_args=""
+for arg in $@
+do
+    gpp_args="$gpp_args $arg"
+done
+
 # compile the file
-g++ $1 -o $filename.out -lGL -lGLU -lglut
+g++ $gpp_args -o $filename.out -lGL -lGLU -lglut
 
 # run the file
 ./$filename.out
