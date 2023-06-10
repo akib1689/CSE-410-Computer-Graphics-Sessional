@@ -83,8 +83,18 @@ void key_poressed(unsigned char key, int x, int y) {
     look_vec[1] = look[1] - camera[1];
     look_vec[2] = look[2] - camera[2];
 
-
+    // normalize the up vector and look vector
+    up = normalize(up);
     look_vec = normalize(look_vec);
+
+
+    // now find the cross product of up and look
+    float* cross = new float[3];
+    cross[0] = up[1] * look_vec[2] - up[2] * look_vec[1];
+    cross[1] = up[2] * look_vec[0] - up[0] * look_vec[2];
+    cross[2] = up[0] * look_vec[1] - up[1] * look_vec[0];
+
+    // the vectors up look and cross are perpendicular to each other
     switch (key) {
     case 'a':
         octahedron.rotateY(-PI_DEGREE / 12);
@@ -99,28 +109,36 @@ void key_poressed(unsigned char key, int x, int y) {
         octahedron.rotateX(PI_DEGREE / 12);
         break;
     case '1':
-        // rotate the look vector around xz plane
-        // y axis is taken as pivot
-        look_vec[0] = look_vec[0] * cos(M_PI / 180) + look_vec[2] * sin(M_PI / 180);
-        look_vec[2] = -look_vec[0] * sin(M_PI / 180) + look_vec[2] * cos(M_PI / 180);
+        // rotate the look vector to cross vector
+        look_vec[0] = cross[0] * sin(M_PI / 180) + look_vec[0] * cos(M_PI / 180);
+        look_vec[1] = cross[1] * sin(M_PI / 180) + look_vec[1] * cos(M_PI / 180);
+        look_vec[2] = cross[2] * sin(M_PI / 180) + look_vec[2] * cos(M_PI / 180);
         break;
     case '2':
-        // rotate the look vector around xz plane
-        // y axis is taken as pivot
-        look_vec[0] = look_vec[0] * cos(-M_PI / 180) + look_vec[2] * sin(-M_PI / 180);
-        look_vec[2] = -look_vec[0] * sin(-M_PI / 180) + look_vec[2] * cos(-M_PI / 180);
+        // rotate the look vector away from cross vector
+        look_vec[0] = cross[0] * sin(-M_PI / 180) + look_vec[0] * cos(-M_PI / 180);
+        look_vec[1] = cross[1] * sin(-M_PI / 180) + look_vec[1] * cos(-M_PI / 180);
+        look_vec[2] = cross[2] * sin(-M_PI / 180) + look_vec[2] * cos(-M_PI / 180);
         break;
     case '3':
-        // rotate the look vector around yz plane
-        // x axis is taken as pivot
-        look_vec[1] = look_vec[1] * cos(-M_PI / 180) + look_vec[2] * sin(-M_PI / 180);
-        look_vec[2] = -look_vec[1] * sin(-M_PI / 180) + look_vec[2] * cos(-M_PI / 180);
+        // rotate the look vector to up vector
+        look_vec[0] = up[0] * sin(M_PI / 180) + look_vec[0] * cos(M_PI / 180);
+        look_vec[1] = up[1] * sin(M_PI / 180) + look_vec[1] * cos(M_PI / 180);
+        look_vec[2] = up[2] * sin(M_PI / 180) + look_vec[2] * cos(M_PI / 180);
+        // change the up vector to away from look vector
+        up[0] = look_vec[0] * sin(-M_PI / 180) + up[0] * cos(-M_PI / 180);
+        up[1] = look_vec[1] * sin(-M_PI / 180) + up[1] * cos(-M_PI / 180);
+        up[2] = look_vec[2] * sin(-M_PI / 180) + up[2] * cos(-M_PI / 180);
         break;
     case '4':
-        // rotate the look vector around yz plane
-        // x axis is taken as pivot
-        look_vec[1] = look_vec[1] * cos(M_PI / 180) + look_vec[2] * sin(M_PI / 180);
-        look_vec[2] = -look_vec[1] * sin(M_PI / 180) + look_vec[2] * cos(M_PI / 180);
+        // rotate the look vector away from up vector
+        look_vec[0] = up[0] * sin(-M_PI / 180) + look_vec[0] * cos(-M_PI / 180);
+        look_vec[1] = up[1] * sin(-M_PI / 180) + look_vec[1] * cos(-M_PI / 180);
+        look_vec[2] = up[2] * sin(-M_PI / 180) + look_vec[2] * cos(-M_PI / 180);
+        // change the up vector to towards look vector
+        up[0] = look_vec[0] * sin(M_PI / 180) + up[0] * cos(M_PI / 180);
+        up[1] = look_vec[1] * sin(M_PI / 180) + up[1] * cos(M_PI / 180);
+        up[2] = look_vec[2] * sin(M_PI / 180) + up[2] * cos(M_PI / 180);
         break;
     case '5':
         // rotate the up vector around xy plane
@@ -140,7 +158,7 @@ void key_poressed(unsigned char key, int x, int y) {
     look[0] = camera[0] + look_vec[0];
     look[1] = camera[1] + look_vec[1];
     look[2] = camera[2] + look_vec[2];
-    look = normalize(look);
+    // look = normalize(look);
     glutPostRedisplay();
 
 }
