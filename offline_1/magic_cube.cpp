@@ -16,6 +16,9 @@ octahedron octahedron;
 
 // Global variables
 
+// function 
+float Q_rsqrt(float);
+
 // camera position
 GLdouble camera[] = { 0.0f, 0.0f, 0.0f };
 // looking position
@@ -73,8 +76,19 @@ void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integ
  * callback function for key press (normal keys)
 */
 void key_poressed(unsigned char key, int x, int y) {
-    switch (key)
-    {
+    // calculate the look vector
+    double look_vec[3];
+    look_vec[0] = look[0] - camera[0];
+    look_vec[1] = look[1] - camera[1];
+    look_vec[2] = look[2] - camera[2];
+    // magnitude
+    float magnitude = look_vec[0] * look_vec[0] + look_vec[1] * look_vec[1] + look_vec[2] * look_vec[2];
+    magnitude = Q_rsqrt(magnitude);
+    // normalize
+    look_vec[0] *= magnitude;
+    look_vec[1] *= magnitude;
+    look_vec[2] *= magnitude;
+    switch (key) {
     case 'a':
         octahedron.rotateY(-PI_DEGREE / 12);
         break;
@@ -88,38 +102,57 @@ void key_poressed(unsigned char key, int x, int y) {
         octahedron.rotateX(PI_DEGREE / 12);
         break;
     case '1':
-        // todo : some shit must be done the math is wrong here
-            // rotate the look vector around x axis
-            // y axis is taken as pivot
-        look[0] = look[0] * cos(-M_PI / 180) + look[2] * sin(-M_PI / 180);
-        look[2] = -look[0] * sin(-M_PI / 180) + look[2] * cos(-M_PI / 180);
-        glutPostRedisplay();
+        // rotate the look vector around xz plane
+        // y axis is taken as pivot
+        look_vec[0] = look_vec[0] * cos(M_PI / 180) + look_vec[2] * sin(M_PI / 180);
+        look_vec[2] = -look_vec[0] * sin(M_PI / 180) + look_vec[2] * cos(M_PI / 180);
         break;
     case '2':
-        // todo same shit 
-            // rotate the look vector around x axis
-            // y axis is taken as pivot
-        look[0] = look[0] * cos(M_PI / 180) + look[2] * sin(M_PI / 180);
-        look[2] = -look[0] * sin(M_PI / 180) + look[2] * cos(M_PI / 180);
-        glutPostRedisplay();
+        // rotate the look vector around xz plane
+        // y axis is taken as pivot
+        look_vec[0] = look_vec[0] * cos(-M_PI / 180) + look_vec[2] * sin(-M_PI / 180);
+        look_vec[2] = -look_vec[0] * sin(-M_PI / 180) + look_vec[2] * cos(-M_PI / 180);
         break;
     case '3':
+        // rotate the look vector around yz plane
+        // x axis is taken as pivot
+        look_vec[1] = look_vec[1] * cos(-M_PI / 180) + look_vec[2] * sin(-M_PI / 180);
+        look_vec[2] = -look_vec[1] * sin(-M_PI / 180) + look_vec[2] * cos(-M_PI / 180);
         break;
     case '4':
+        // rotate the look vector around yz plane
+        // x axis is taken as pivot
+        look_vec[1] = look_vec[1] * cos(M_PI / 180) + look_vec[2] * sin(M_PI / 180);
+        look_vec[2] = -look_vec[1] * sin(M_PI / 180) + look_vec[2] * cos(M_PI / 180);
         break;
     case '5':
+        // rotate the up vector around xy plane
+        // z axis is taken as pivot
+        up[0] = up[0] * cos(M_PI / 180) + up[1] * sin(M_PI / 180);
+        up[1] = -up[0] * sin(M_PI / 180) + up[1] * cos(M_PI / 180);
         break;
     case '6':
+        // rotate the up vector around xy plane
+        // z axis is taken as pivot
+        up[0] = up[0] * cos(-M_PI / 180) + up[1] * sin(-M_PI / 180);
+        up[1] = -up[0] * sin(-M_PI / 180) + up[1] * cos(-M_PI / 180);
         break;
     default:
         break;
     }
+    look[0] = camera[0] + look_vec[0];
+    look[1] = camera[1] + look_vec[1];
+    look[2] = camera[2] + look_vec[2];
+    glutPostRedisplay();
+
 }
 
 /**
  * callback function for key press (special keys)
 */
 void special_key_pressed(int key, int x, int y) {
+    // first find to which direction the up vector is pointing more
+    cout << "up vector: " << up[0] << " " << up[1] << " " << up[2] << endl;
     switch (key) {
     case GLUT_KEY_LEFT:
         // move the camera to left
@@ -176,4 +209,23 @@ int main(int argc, char** argv) {
     initGL();                     // Our own OpenGL initialization
     glutMainLoop();  // Enter the infinitely event-processing loop
     return 0;
+}
+
+
+
+float Q_rsqrt(float number)
+{
+    long i;
+    float x2, y;
+    const float threehalfs = 1.5F;
+
+    x2 = number * 0.5F;
+    y = number;
+    i = *(long*)&y;                       // evil floating point bit level hacking
+    i = 0x5f3759df - (i >> 1);               // what the fuck?
+    y = *(float*)&i;
+    y = y * (threehalfs - (x2 * y * y));   // 1st iteration
+    // y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+
+    return y;
 }

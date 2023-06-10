@@ -78,16 +78,12 @@ void octahedron::draw_octahedron() {
 
 void octahedron::rotateX(float angle) {
     this->angleX += angle;
-    cout << this->angleX << endl;
-    glutPostRedisplay();
 }
 
 void octahedron::rotateY(float angle) {
     this->angleY += angle;
-    glutPostRedisplay();
 }
 
 void octahedron::rotateZ(float angle) {
     this->angleZ += angle;
-    glutPostRedisplay();
 }
