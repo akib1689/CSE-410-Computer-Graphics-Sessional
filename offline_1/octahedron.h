@@ -7,6 +7,8 @@ private:
   float vertex_color_2[3] = {0.0f, 1.0f, 0.0f}; // green
   float vertex_color_3[3] = {0.0f, 0.0f, 1.0f}; // blue
 
+  float cylinder_color[3] = {1.0f, 1.0f, 1.0f}; // white
+
   float sides_color_1[3] = {1.0f, 0.75f, 0.7f}; // pink
 
   float sides_color_2[3] = {0.0f, 1.0f, 1.0f}; // cyan
@@ -27,11 +29,11 @@ private:
   float cylinder_dist_x = 1.41421356237f / 2.0f; // distance between
                                                  // the center and the cylinder
 
-    float phi = acos(-1.0f / 3.0f); // angle between the top and the side
+  float phi = acos(-1.0f / 3.0f); // angle between the top and the side
 
   // used for drawing the triangles
-  void draw_triangle(float[3], float[3], float[3], float[3]);
-  void draw_quarter_cylinder(double, double);
+  void draw_triangle(float[3], float[3], float[3], float[3], bool);
+  void draw_partial_cylinder(double, double, float[3], int);
 
 public:
   octahedron(/* args */);

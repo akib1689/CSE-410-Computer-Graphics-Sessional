@@ -14,8 +14,73 @@ octahedron::octahedron(/* args */) {}
 
 octahedron::~octahedron() {}
 
+void octahedron::draw_partial_cylinder(double radius, double height,
+                                       float color[3], int multiplier) {
+
+  double step = (M_PI - this->phi) / this->slices;
+  if (multiplier == -1) {
+    // rotate 90 degree about z axis this
+    // why this rotation is needed?
+    // got through trial and error (by drawing axis of the cylinder)
+    // one possible explanation might be:
+    // this is needed because the cylinder is drawn in the x-y plane
+    // so when the world space is shifted by x axis there is a extra rotation
+    // needed.
+    glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+  }
+  // rotate for model space
+  glRotatef((-M_PI + this->phi + step) * 90.0f / M_PI, 0.0f, 0.0f, 1.0f);
+
+  // set the color
+  glColor3fv(color);
+  // generate the vertices
+  vector<double> vertices;
+  for (int i = 0; i <= this->slices + 1; i++) {
+    double theta = i * step;
+    double x = radius * cos(theta);
+    double y = radius * sin(theta);
+    double z = height;
+    vertices.push_back(x);
+    vertices.push_back(y);
+    vertices.push_back(z);
+  }
+
+  // now the vertices are generated
+  // draw the quads
+  // at first rotate the model space by step degree about z axis
+  glRotatef(-step * 90.0f / M_PI, 0.0f, 0.0f, 1.0f);
+  for (int i = 0; i <= this->slices; i++) {
+    // the points are of quads are like this
+    // i'th vertex, i+1'th vertex, i+1'th vertex with -z, i'th vertex with -z
+    glBegin(GL_QUADS);
+    // first vertex
+    glVertex3f(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]);
+    // second vertex
+    glVertex3f(vertices[(i + 1) * 3], vertices[(i + 1) * 3 + 1],
+               vertices[(i + 1) * 3 + 2]);
+    // third vertex
+    glVertex3f(vertices[(i + 1) * 3], vertices[(i + 1) * 3 + 1],
+               -vertices[(i + 1) * 3 + 2]);
+    // fourth vertex
+    glVertex3f(vertices[i * 3], vertices[i * 3 + 1], -vertices[i * 3 + 2]);
+    glEnd();
+  }
+
+  // revert the rotation of model space
+  glRotatef(step * 90.0f / M_PI, 0.0f, 0.0f, 1.0f);
+
+  // reverse the rotation of model space
+  glRotatef((M_PI - this->phi - step) * 90.0f / M_PI, 0.0f, 0.0f, 1.0f);
+
+  // revert the rotation of model space for multipliers
+  if (multiplier == -1) {
+    // revert the extra rotation of model space
+    glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+  }
+}
+
 void octahedron::draw_triangle(float a[3], float b[3], float c[3],
-                               float color[3]) {
+                               float color[3], bool draw_bottom_cylinder) {
   glBegin(GL_TRIANGLES);
   glColor3fv(color);
   glVertex3fv(a);
@@ -23,8 +88,6 @@ void octahedron::draw_triangle(float a[3], float b[3], float c[3],
   glVertex3fv(c);
   glEnd();
 
-  // set the clor back to white
-  glColor3f(1.0f, 1.0f, 1.0f);
   // draw the cylinder with the specified radius
   // and height will be the distance between the points a and b
   // and the center of the cylinder will be the center of the line ab
@@ -33,27 +96,34 @@ void octahedron::draw_triangle(float a[3], float b[3], float c[3],
                     (a[1] - b[1]) * (a[1] - b[1]) +
                     (a[2] - b[2]) * (a[2] - b[2]);
   magnitude = sqrt(magnitude);
-  // rotate the axis by 45 degrees about the y axis
-  glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
-  // translate the axis at (cylinder diatance,0,0)
-  glTranslatef(this->cylinder_dist_x, 0.0f, 0.0f);
-  this->draw_quarter_cylinder(this->radius, magnitude / 2.0f);
-  // revert the translation
-  glTranslatef(-this->cylinder_dist_x, 0.0f, 0.0f);
-  // revert the rotation
-  glRotatef(-45.0f, 0.0f, 1.0f, 0.0f);
-
-  // similarly for the other y sides
 
   // rotate the axis by 45 degrees about the x axis
   glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
   // translate the axis at (0,cylinder distance,0)
   glTranslatef(0.0f, this->cylinder_dist_x, 0.0f);
-  this->draw_quarter_cylinder(this->radius, magnitude / 2.0f);
+  this->draw_partial_cylinder(this->radius, magnitude / 2.0f,
+                              this->cylinder_color, -1);
   // revert the translation
   glTranslatef(0.0f, -this->cylinder_dist_x, 0.0f);
   // revert the rotation
   glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
+
+  // similarly for the other y sides
+
+  if (!draw_bottom_cylinder) {
+    return;
+  }
+
+  // rotate the axis by 45 degrees about the y axis
+  glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+  // translate the axis at (cylinder diatance,0,0)
+  glTranslatef(this->cylinder_dist_x, 0.0f, 0.0f);
+  this->draw_partial_cylinder(this->radius, magnitude / 2.0f,
+                              this->cylinder_color, 1);
+  // revert the translation
+  glTranslatef(-this->cylinder_dist_x, 0.0f, 0.0f);
+  // revert the rotation
+  glRotatef(-45.0f, 0.0f, 1.0f, 0.0f);
 }
 
 void octahedron::draw_octahedron() {
@@ -64,16 +134,20 @@ void octahedron::draw_octahedron() {
   glRotatef(this->angleZ, 0.0f, 0.0f, 1.0f);
 
   // draw the first half
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1);
+  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
+                      true);
   // rotate 90 degrees about the y axis
   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2);
+  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
+                      true);
   // rotate 90 degrees about the y axis
   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1);
+  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
+                      true);
   // rotate 90 degrees about the y axis
   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2);
+  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
+                      true);
   // rotate 90 degrees about the y axis
   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 
@@ -82,16 +156,20 @@ void octahedron::draw_octahedron() {
   // draw the other half
   // rotate 180 degrees about the x axis
   glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1);
+  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
+                      false);
   // rotate 90 degrees about the y axis
   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2);
+  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
+                      false);
   // rotate 90 degrees about the y axis
   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1);
+  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
+                      false);
   // rotate 90 degrees about the y axis
   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2);
+  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
+                      false);
   // rotate 90 degrees about the y axis
   glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 
@@ -215,39 +293,4 @@ void octahedron::transform_to_octahedron() {
   // update the cylinder dist x
   float slanted_dist_x = slanted_distance / cos(this->phi / 2.0f);
   this->cylinder_dist_x += slanted_dist_x;
-}
-
-void octahedron::draw_quarter_cylinder(double radius, double height) {
-  // generate the vertices
-  vector<double> vertices;
-  for (int i = 0; i <= this->slices; i++) {
-    double theta = i * 2.0 * M_PI / this->slices;
-    double x = radius * cos(theta);
-    double y = radius * sin(theta);
-    double z = height;
-    vertices.push_back(x);
-    vertices.push_back(y);
-    vertices.push_back(z);
-  }
-
-  // now the vertices are generated
-  // draw the quads
-  for (int i = 0; i < this->slices; i++) {
-    // the points are of quads are like this
-    // i'th vertex, i+1'th vertex, i+1'th vertex with -z, i'th vertex with -z
-    // there will not be any problem with the last vertex because the
-    // above loop generates the last vertex on top of the first vertex
-    glBegin(GL_QUADS);
-    // first vertex
-    glVertex3f(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]);
-    // second vertex
-    glVertex3f(vertices[(i + 1) * 3], vertices[(i + 1) * 3 + 1],
-               vertices[(i + 1) * 3 + 2]);
-    // third vertex
-    glVertex3f(vertices[(i + 1) * 3], vertices[(i + 1) * 3 + 1],
-               -vertices[(i + 1) * 3 + 2]);
-    // fourth vertex
-    glVertex3f(vertices[i * 3], vertices[i * 3 + 1], -vertices[i * 3 + 2]);
-    glEnd();
-  }
 }
