@@ -24,12 +24,10 @@ private:
 
   int slices = 100; // number of slices in the cylinder
 
-  float cylinder_dist_x = 1.0f; // distance between the center and the cylinder
+  float cylinder_dist_x = 1.41421356237f / 2.0f; // distance between
+                                                 // the center and the cylinder
 
-  float slanted_dist = 0.0f; // distance between the center and the slanted
-                             // cylinder
-
-  float phi = acos(-1.0f / 3.0f); // angle between the top and the side
+    float phi = acos(-1.0f / 3.0f); // angle between the top and the side
 
   // used for drawing the triangles
   void draw_triangle(float[3], float[3], float[3], float[3]);

@@ -1,3 +1,6 @@
+#define _USE_MATH_DEFINES
+#define SQRT_2 1.41421356237f
+
 #include <GL/glut.h> // GLUT, includes glu.h and gl.h
 
 #include <cmath>
@@ -22,16 +25,6 @@ void octahedron::draw_triangle(float a[3], float b[3], float c[3],
 
   // set the clor back to white
   glColor3f(1.0f, 1.0f, 1.0f);
-  // draw a line joining the center of the triangle
-  // and center of the base (b, c)
-  // draw a point at the origin
-  glLineWidth(4.0f);
-  glBegin(GL_LINES);
-  glVertex3f((a[0] + b[0] + c[0]) / 3.0f, (a[1] + b[1] + c[1]) / 3.0f,
-             (a[2] + b[2] + c[2]) / 3.0f);
-  glVertex3f((a[0] + b[0]) / 2.0f, (a[1] + b[1]) / 2.0f, (a[2] + b[2]) / 2.0f);
-  glEnd();
-
   // draw the cylinder with the specified radius
   // and height will be the distance between the points a and b
   // and the center of the cylinder will be the center of the line ab
@@ -42,13 +35,25 @@ void octahedron::draw_triangle(float a[3], float b[3], float c[3],
   magnitude = sqrt(magnitude);
   // rotate the axis by 45 degrees about the y axis
   glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
-  // translate the axis at (1,0,0)
+  // translate the axis at (cylinder diatance,0,0)
   glTranslatef(this->cylinder_dist_x, 0.0f, 0.0f);
   this->draw_quarter_cylinder(this->radius, magnitude / 2.0f);
   // revert the translation
   glTranslatef(-this->cylinder_dist_x, 0.0f, 0.0f);
   // revert the rotation
   glRotatef(-45.0f, 0.0f, 1.0f, 0.0f);
+
+  // similarly for the other y sides
+
+  // rotate the axis by 45 degrees about the x axis
+  glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
+  // translate the axis at (0,cylinder distance,0)
+  glTranslatef(0.0f, this->cylinder_dist_x, 0.0f);
+  this->draw_quarter_cylinder(this->radius, magnitude / 2.0f);
+  // revert the translation
+  glTranslatef(0.0f, -this->cylinder_dist_x, 0.0f);
+  // revert the rotation
+  glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
 }
 
 void octahedron::draw_octahedron() {
@@ -155,9 +160,6 @@ void octahedron::transform_to_sphere() {
 
   // the radius will be slanted distance tan(phi/2)
   float factor = tan(this->phi / 2.0f);
-  if (factor < 0) {
-    factor = -factor;
-  }
 
   float radius_increment = slanted_distance * factor;
 
@@ -166,12 +168,9 @@ void octahedron::transform_to_sphere() {
 
   // update the cylinder dist x
 
-  // the distance will be sqrt(slanted distance * slanted distance + radius *
-  // radius)
-
-  // update the cylinder dist x
-  this->cylinder_dist_x -=
-      sqrt(slanted_distance * slanted_distance + this->radius * this->radius);
+  // slanted distance / cos(phi/2)
+  float slanted_dist_x = slanted_distance / cos(this->phi / 2.0f);
+  this->cylinder_dist_x -= slanted_dist_x;
 }
 
 void octahedron::transform_to_octahedron() {
@@ -207,14 +206,15 @@ void octahedron::transform_to_octahedron() {
 
   // the radius will be slanted distance tan(phi/2)
   float factor = tan(this->phi / 2.0f);
-  if (factor < 0) {
-    factor = -factor;
-  }
 
   float radius_increment = slanted_distance * factor;
 
   // update the radius
   this->radius -= radius_increment;
+
+  // update the cylinder dist x
+  float slanted_dist_x = slanted_distance / cos(this->phi / 2.0f);
+  this->cylinder_dist_x += slanted_dist_x;
 }
 
 void octahedron::draw_quarter_cylinder(double radius, double height) {
