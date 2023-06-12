@@ -71,6 +71,8 @@ void display() {
  * time period of the pendulum = 2 seconds
  * angular frequency = 2 * PI / time period = PI
  * pendulum angle = HIGH_BOB_ANGLE * cos(angular frequency * time)
+ * motivation behind animating in the idle function:
+ * https://stackoverflow.com/questions/15844619/playing-an-animation-in-opengl
  */
 void idle_handler() {
   // get the current time
@@ -91,7 +93,8 @@ void idle_handler() {
  *  Handler for window re-size event. Called back when the window first appears
  * and whenever the window is re-sized with its new width and height
  */
-void reshape(GLsizei width, GLsizei height) { // GLsizei for non-negative integer
+void reshape(GLsizei width,
+             GLsizei height) { // GLsizei for non-negative integer
   // Compute aspect ratio of the new window
   if (height == 0)
     height = 1; // To prevent divide by 0
@@ -106,23 +109,25 @@ void reshape(GLsizei width, GLsizei height) { // GLsizei for non-negative intege
   if (width >= height) {
     // aspect >= 1, set the height from -1 to 1, with larger width
     gluOrtho2D(-1.0 * aspect, 1.0 * aspect, -1.0, 1.0);
-  }
-  else {
+  } else {
     // aspect < 1, set the width to -1 to 1, with larger height
     gluOrtho2D(-1.0, 1.0, -1.0 / aspect, 1.0 / aspect);
   }
 }
 
 /* Main function: GLUT runs as a console application starting at main()  */
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   // get the current time
   time_t now = time(0);
   last_idle_time = clock();
   // convert the current time to local time
-  tm* local_time = localtime(&now);
-  // calculate the degree of rotation for the hour hand, minute hand and second hand
-  hour_angle = (local_time->tm_hour % 12) * HOUR_ANGLE + (local_time->tm_min * HOUR_ANGLE_PER_MINUTES);
-  minute_angle = local_time->tm_min * MINUTE_ANGLE + (local_time->tm_sec * MINUTE_ANGLE_PER_SECONDS);
+  tm *local_time = localtime(&now);
+  // calculate the degree of rotation for the hour hand, minute hand and second
+  // hand
+  hour_angle = (local_time->tm_hour % 12) * HOUR_ANGLE +
+               (local_time->tm_min * HOUR_ANGLE_PER_MINUTES);
+  minute_angle = local_time->tm_min * MINUTE_ANGLE +
+                 (local_time->tm_sec * MINUTE_ANGLE_PER_SECONDS);
   second_angle = local_time->tm_sec * SECOND_ANGLE;
   // adjust the hour angle the hour and minutes hand by 90 degrees
   hour_angle -= 90.0;
@@ -140,16 +145,20 @@ int main(int argc, char** argv) {
   glutInit(&argc, argv);        // Initialize GLUT
   glutInitWindowSize(640, 640); // Set the window's initial width & height
 
-  glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
+  glutInitWindowPosition(50,
+                         50); // Position the window's initial top-left corner
 
   glutCreateWindow("Offline 1: Clock"); // Create a window with the given title
-  glutDisplayFunc(display);             // Register display callback handler for window re-paint
+  glutDisplayFunc(
+      display); // Register display callback handler for window re-paint
 
-  glutReshapeFunc(reshape); // Register callback handler for window re-size event
+  glutReshapeFunc(
+      reshape); // Register callback handler for window re-size event
 
-  glutIdleFunc(idle_handler);          // Register callback handler if no other event occurs
+  glutIdleFunc(
+      idle_handler); // Register callback handler if no other event occurs
   glutTimerFunc(0, second_handler, 0); // First timer call immediately
-  glutMainLoop();                      // Enter the infinitely event-processing loop
+  glutMainLoop(); // Enter the infinitely event-processing loop
   return 0;
 }
 
@@ -230,12 +239,11 @@ void draw_clock() {
   for (int i = 0; i < 12; i++) {
     glRotatef(HOUR_ANGLE, 0.0f, 0.0f, 1.0f);
     glBegin(GL_LINES);
-    // for the 12, 3, 6, 9 lines 
+    // for the 12, 3, 6, 9 lines
     if (i % 3 == 2) {
       glVertex2f(0.7f, 0.0f);
       glVertex2f(0.9f, 0.0f);
-    }
-    else {
+    } else {
       glVertex2f(0.8f, 0.0f);
       glVertex2f(0.9f, 0.0f);
     }
@@ -250,7 +258,6 @@ void draw_clock() {
   glVertex2f(0.0f, -2.0f);
   glVertex2f(-1.0f, -1.5f);
   glEnd();
-
 }
 
 /**
@@ -267,16 +274,12 @@ void draw_circle(float cx, float cy, float r, int num_segments, bool fill) {
 
   float y = 0;
   glLineWidth(2);
-  if (fill)
-  {
+  if (fill) {
     glBegin(GL_POLYGON);
-  }
-  else
-  {
+  } else {
     glBegin(GL_LINE_LOOP);
   }
-  for (int ii = 0; ii < num_segments; ii++)
-  {
+  for (int ii = 0; ii < num_segments; ii++) {
     glVertex2f(x + cx, y + cy); // output vertex
 
     // calculate the tangential vector
@@ -336,8 +339,7 @@ void second_handler(int value) {
   glutTimerFunc(1000, second_handler, 0);
 }
 
-void draw_pendulum()
-{
+void draw_pendulum() {
   // draw the pendulum rod
   glBegin(GL_LINES);
   glVertex2f(0.0f, 0.0f);

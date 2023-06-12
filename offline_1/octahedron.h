@@ -20,10 +20,20 @@ private:
   float angleY = 0.0f;
   float angleZ = 0.0f;
 
-  float length_of_cylinder = 1.41421356237f; // sqrt(2)
+  float radius = 0.0f; // radius of the cylinder
+
+  int slices = 100; // number of slices in the cylinder
+
+  float cylinder_dist_x = 1.0f; // distance between the center and the cylinder
+
+  float slanted_dist = 0.0f; // distance between the center and the slanted
+                             // cylinder
+
+  float phi = acos(-1.0f / 3.0f); // angle between the top and the side
 
   // used for drawing the triangles
   void draw_triangle(float[3], float[3], float[3], float[3]);
+  void draw_quarter_cylinder(double, double);
 
 public:
   octahedron(/* args */);

@@ -193,7 +193,6 @@ void special_key_pressed(int key, int x, int y) {
     look[0] += up_perp[0] * 0.1;
     look[1] += up_perp[1] * 0.1;
     look[2] += up_perp[2] * 0.1;
-    glutPostRedisplay();
     break;
   case GLUT_KEY_RIGHT:
     // move the camera to the opposite direction of up_perp vector
@@ -203,19 +202,24 @@ void special_key_pressed(int key, int x, int y) {
     look[0] -= up_perp[0] * 0.1;
     look[1] -= up_perp[1] * 0.1;
     look[2] -= up_perp[2] * 0.1;
-    glutPostRedisplay();
     break;
   case GLUT_KEY_UP:
-    // move the camera forward
-    camera[2] -= 0.1;
-    look[2] -= 0.1;
-    glutPostRedisplay();
+    // move the camera in the direction of look vector
+    camera[0] += look_vec[0] * 0.1;
+    camera[1] += look_vec[1] * 0.1;
+    camera[2] += look_vec[2] * 0.1;
+    look[0] += look_vec[0] * 0.1;
+    look[1] += look_vec[1] * 0.1;
+    look[2] += look_vec[2] * 0.1;
     break;
   case GLUT_KEY_DOWN:
-    // move the camera backward
-    camera[2] += 0.1;
-    look[2] += 0.1;
-    glutPostRedisplay();
+    // move the camera in the opposite direction of look vector
+    camera[0] -= look_vec[0] * 0.1;
+    camera[1] -= look_vec[1] * 0.1;
+    camera[2] -= look_vec[2] * 0.1;
+    look[0] -= look_vec[0] * 0.1;
+    look[1] -= look_vec[1] * 0.1;
+    look[2] -= look_vec[2] * 0.1;
     break;
   case GLUT_KEY_PAGE_UP:
     // move the camera in the up vectors direction
@@ -225,7 +229,6 @@ void special_key_pressed(int key, int x, int y) {
     look[0] += up[0] * 0.1;
     look[1] += up[1] * 0.1;
     look[2] += up[2] * 0.1;
-    glutPostRedisplay();
     break;
   case GLUT_KEY_PAGE_DOWN:
     // move the camera in the opposite direction of up vector
@@ -235,11 +238,11 @@ void special_key_pressed(int key, int x, int y) {
     look[0] -= up[0] * 0.1;
     look[1] -= up[1] * 0.1;
     look[2] -= up[2] * 0.1;
-    glutPostRedisplay();
     break;
   default:
     break;
   }
+  glutPostRedisplay();
   // camera = normalize(camera);
   // look = normalize(look);
 }
