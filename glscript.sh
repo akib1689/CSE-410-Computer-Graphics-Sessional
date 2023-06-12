@@ -47,3 +47,6 @@ g++ $gpp_args -o $filename.out -lGL -lGLU -lglut
 
 # run the file
 ./$filename.out
+
+# remove the executable
+rm $filename.out

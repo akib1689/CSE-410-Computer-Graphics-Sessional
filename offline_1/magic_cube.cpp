@@ -133,20 +133,20 @@ void key_poressed(unsigned char key, int x, int y) {
     look_vec[0] = up[0] * sin(M_PI / 180) + look_vec[0] * cos(M_PI / 180);
     look_vec[1] = up[1] * sin(M_PI / 180) + look_vec[1] * cos(M_PI / 180);
     look_vec[2] = up[2] * sin(M_PI / 180) + look_vec[2] * cos(M_PI / 180);
-    // change the up vector to away from look vector
-    up[0] = look_vec[0] * sin(-M_PI / 180) + up[0] * cos(-M_PI / 180);
-    up[1] = look_vec[1] * sin(-M_PI / 180) + up[1] * cos(-M_PI / 180);
-    up[2] = look_vec[2] * sin(-M_PI / 180) + up[2] * cos(-M_PI / 180);
+    // change the up vector to perpendicular to look vector and cross vector
+    up[0] = look_vec[1] * cross[2] - look_vec[2] * cross[1];
+    up[1] = look_vec[2] * cross[0] - look_vec[0] * cross[2];
+    up[2] = look_vec[0] * cross[1] - look_vec[1] * cross[0];
     break;
   case '4':
     // rotate the look vector away from up vector
     look_vec[0] = up[0] * sin(-M_PI / 180) + look_vec[0] * cos(-M_PI / 180);
     look_vec[1] = up[1] * sin(-M_PI / 180) + look_vec[1] * cos(-M_PI / 180);
     look_vec[2] = up[2] * sin(-M_PI / 180) + look_vec[2] * cos(-M_PI / 180);
-    // change the up vector to towards look vector
-    up[0] = look_vec[0] * sin(M_PI / 180) + up[0] * cos(M_PI / 180);
-    up[1] = look_vec[1] * sin(M_PI / 180) + up[1] * cos(M_PI / 180);
-    up[2] = look_vec[2] * sin(M_PI / 180) + up[2] * cos(M_PI / 180);
+    // change the up vector to perpendicular to look vector and cross vector
+    up[0] = look_vec[1] * cross[2] - look_vec[2] * cross[1];
+    up[1] = look_vec[2] * cross[0] - look_vec[0] * cross[2];
+    up[2] = look_vec[0] * cross[1] - look_vec[1] * cross[0];
     break;
   case '5':
     // rotate the up vector around xy plane
