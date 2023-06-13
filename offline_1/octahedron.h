@@ -24,7 +24,11 @@ private:
 
   float radius = 0.0f; // radius of the cylinder
 
-  int slices = 100; // number of slices in the cylinder
+  int cylinder_slices = 100; // number of slices in the cylinder
+  int vertical_slices =
+      25; // number of slices in the vertical direction of sphere
+  int horizontal_slices =
+      25; // number of slices in the horizontal direction of sphere
 
   float cylinder_dist_x = 1.41421356237f / 2.0f; // distance between
                                                  // the center and the cylinder
@@ -34,6 +38,7 @@ private:
   // used for drawing the triangles
   void draw_triangle(float[3], float[3], float[3], float[3], bool);
   void draw_partial_cylinder(double, double, float[3], int);
+  void draw_partial_sphere(double, float[3]);
 
 public:
   octahedron(/* args */);

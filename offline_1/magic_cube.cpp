@@ -149,16 +149,16 @@ void key_poressed(unsigned char key, int x, int y) {
     up[2] = look_vec[0] * cross[1] - look_vec[1] * cross[0];
     break;
   case '5':
-    // rotate the up vector around xy plane
-    // z axis is taken as pivot
-    up[0] = up[0] * cos(M_PI / 180) + up[1] * sin(M_PI / 180);
-    up[1] = -up[0] * sin(M_PI / 180) + up[1] * cos(M_PI / 180);
+    // rotate the up vector to the cross vector
+    up[0] = cross[0] * sin(M_PI / 180) + up[0] * cos(M_PI / 180);
+    up[1] = cross[1] * sin(M_PI / 180) + up[1] * cos(M_PI / 180);
+    up[2] = cross[2] * sin(M_PI / 180) + up[2] * cos(M_PI / 180);
     break;
   case '6':
-    // rotate the up vector around xy plane
-    // z axis is taken as pivot
-    up[0] = up[0] * cos(-M_PI / 180) + up[1] * sin(-M_PI / 180);
-    up[1] = -up[0] * sin(-M_PI / 180) + up[1] * cos(-M_PI / 180);
+    // rotate the up vector away from the cross vector
+    up[0] = cross[0] * sin(-M_PI / 180) + up[0] * cos(-M_PI / 180);
+    up[1] = cross[1] * sin(-M_PI / 180) + up[1] * cos(-M_PI / 180);
+    up[2] = cross[2] * sin(-M_PI / 180) + up[2] * cos(-M_PI / 180);
     break;
   default:
     break;

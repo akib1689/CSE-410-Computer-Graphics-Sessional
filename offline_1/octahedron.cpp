@@ -14,10 +14,51 @@ octahedron::octahedron(/* args */) {}
 
 octahedron::~octahedron() {}
 
+void octahedron::draw_partial_sphere(double radius, float color[3]) {
+  // set the color
+  glColor3fv(color);
+
+  // generate the vertices
+  vector<double> vertices;
+  double step = (2 * M_PI) / this->horizontal_slices;
+  double phi_step = (M_PI) / this->vertical_slices;
+  for (int i = 0; i <= this->vertical_slices; i++) {
+    double phi = i * phi_step;
+    for (int j = 0; j <= this->horizontal_slices; j++) {
+      double theta = j * step;
+      double x = radius * sin(phi) * cos(theta);
+      double y = radius * sin(phi) * sin(theta);
+      double z = radius * cos(phi);
+      vertices.push_back(x);
+      vertices.push_back(y);
+      vertices.push_back(z);
+    }
+  }
+
+  // now the vertices are generated
+  // draw the triangles
+  for (int i = 0; i < this->vertical_slices; i++) {
+    for (int j = 0; j < this->horizontal_slices; j++) {
+      int index = (i * (this->horizontal_slices + 1) + j) * 3;
+      float v1[3] = {vertices[index], vertices[index + 1], vertices[index + 2]};
+      float v2[3] = {vertices[index + 3], vertices[index + 4],
+                     vertices[index + 5]};
+      float v3[3] = {vertices[index + 3 + this->horizontal_slices + 1],
+                     vertices[index + 4 + this->horizontal_slices + 1],
+                     vertices[index + 5 + this->horizontal_slices + 1]};
+      float v4[3] = {vertices[index + this->horizontal_slices + 1],
+                     vertices[index + 1 + this->horizontal_slices + 1],
+                     vertices[index + 2 + this->horizontal_slices + 1]};
+      draw_triangle(v1, v2, v3, color, false);
+      draw_triangle(v1, v3, v4, color, false);
+    }
+  }
+}
+
 void octahedron::draw_partial_cylinder(double radius, double height,
                                        float color[3], int multiplier) {
 
-  double step = (M_PI - this->phi) / this->slices;
+  double step = (M_PI - this->phi) / this->cylinder_slices;
   if (multiplier == -1) {
     // rotate 90 degree about z axis this
     // why this rotation is needed?
@@ -35,7 +76,7 @@ void octahedron::draw_partial_cylinder(double radius, double height,
   glColor3fv(color);
   // generate the vertices
   vector<double> vertices;
-  for (int i = 0; i <= this->slices + 1; i++) {
+  for (int i = 0; i <= this->cylinder_slices + 1; i++) {
     double theta = i * step;
     double x = radius * cos(theta);
     double y = radius * sin(theta);
@@ -49,7 +90,7 @@ void octahedron::draw_partial_cylinder(double radius, double height,
   // draw the quads
   // at first rotate the model space by step degree about z axis
   glRotatef(-step * 90.0f / M_PI, 0.0f, 0.0f, 1.0f);
-  for (int i = 0; i <= this->slices; i++) {
+  for (int i = 0; i <= this->cylinder_slices; i++) {
     // the points are of quads are like this
     // i'th vertex, i+1'th vertex, i+1'th vertex with -z, i'th vertex with -z
     glBegin(GL_QUADS);
@@ -176,7 +217,10 @@ void octahedron::draw_octahedron() {
   // now the original state is re stored
   // rotate -180 degrees about the x axis
   glRotatef(-180.0f, 1.0f, 0.0f, 0.0f);
-
+  // test draw of sphere
+  glTranslatef(0.0f, 2.0f, 2.0f);
+  this->draw_partial_sphere(0.5f, this->vertex_color_1);
+  glTranslatef(0.0f, -2.0f, -2.0f);
   // reverse the global rotation
   glRotatef(-this->angleZ, 0.0f, 0.0f, 1.0f);
   glRotatef(-this->angleY, 0.0f, 1.0f, 0.0f);
