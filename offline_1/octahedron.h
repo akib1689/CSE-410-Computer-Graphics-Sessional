@@ -24,11 +24,9 @@ private:
 
   float radius = 0.0f; // radius of the cylinder
 
-  int cylinder_slices = 100; // number of slices in the cylinder
-  int vertical_slices =
-      25; // number of slices in the vertical direction of sphere
-  int horizontal_slices =
-      25; // number of slices in the horizontal direction of sphere
+  int cylinder_slices = 64; // number of slices in the cylinder
+  int stack_count = 20;     // number of stacks of sphere
+  int sector_count = 25;    // number of sectors of sphere
 
   float cylinder_dist_x = 1.41421356237f / 2.0f; // distance between
                                                  // the center and the cylinder
@@ -36,6 +34,7 @@ private:
   float phi = acos(-1.0f / 3.0f); // angle between the top and the side
 
   // used for drawing the triangles
+  void draw_triangle(float[3], float[3], float[3], float[3]);
   void draw_triangle(float[3], float[3], float[3], float[3], bool);
   void draw_partial_cylinder(double, double, float[3], int);
   void draw_partial_sphere(double, float[3]);

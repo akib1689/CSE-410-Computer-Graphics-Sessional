@@ -19,38 +19,79 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
   glColor3fv(color);
 
   // generate the vertices
-  vector<double> vertices;
-  double step = (2 * M_PI) / this->horizontal_slices;
-  double phi_step = (M_PI) / this->vertical_slices;
-  for (int i = 0; i <= this->vertical_slices; i++) {
-    double phi = i * phi_step;
-    for (int j = 0; j <= this->horizontal_slices; j++) {
-      double theta = j * step;
-      double x = radius * sin(phi) * cos(theta);
-      double y = radius * sin(phi) * sin(theta);
-      double z = radius * cos(phi);
-      vertices.push_back(x);
-      vertices.push_back(y);
-      vertices.push_back(z);
-    }
-  }
+  vector<vector<float>> vertices;
+  // there are stack_count + 1 vectors each of which contains
+  // sector_count + 1 vertices
 
+  // calculate the steps
+  double stack_step =
+      M_PI / this->stack_count; // phi of the sphere (determines the height)
+  double sector_step =
+      2 * M_PI / this->sector_count; // theta of the sphere xy plane
+  for (int i = 0; i <= stack_count + 1; i++) {
+    // we are generating two more points than needed
+    // calculate the phi
+    double phi = M_PI / 2 - i * stack_step; // phi = 90 - i * phi_step
+    double xy = radius * cos(phi);          // r * cos(phi)
+    double z = radius * sin(phi);
+    // local vector to store the vertices
+    vector<float> local_vector; // holds the vertices for a single phi
+    for (int j = 0; j <= this->sector_count; j++) {
+      // calculate the theta
+      double theta = j * sector_step;
+      // calculate the x, y, z
+      // x = r * cos(phi) * cos(theta)
+      // y = r * cos(phi) * sin(theta)
+      // z = r * sin(phi)
+      double x = xy * cos(theta);
+      double y = xy * sin(theta);
+      // add the vertex to the vector
+      local_vector.push_back(x);
+      local_vector.push_back(y);
+      local_vector.push_back(z);
+    }
+    vertices.push_back(local_vector);
+  }
+  // cout << "length of vertices: " << vertices.size() << endl;
   // now the vertices are generated
-  // draw the triangles
-  for (int i = 0; i < this->vertical_slices; i++) {
-    for (int j = 0; j < this->horizontal_slices; j++) {
-      int index = (i * (this->horizontal_slices + 1) + j) * 3;
-      float v1[3] = {vertices[index], vertices[index + 1], vertices[index + 2]};
-      float v2[3] = {vertices[index + 3], vertices[index + 4],
-                     vertices[index + 5]};
-      float v3[3] = {vertices[index + 3 + this->horizontal_slices + 1],
-                     vertices[index + 4 + this->horizontal_slices + 1],
-                     vertices[index + 5 + this->horizontal_slices + 1]};
-      float v4[3] = {vertices[index + this->horizontal_slices + 1],
-                     vertices[index + 1 + this->horizontal_slices + 1],
-                     vertices[index + 2 + this->horizontal_slices + 1]};
-      draw_triangle(v1, v2, v3, color, false);
-      draw_triangle(v1, v3, v4, color, false);
+  // draw the quads using the vertices
+  for (int i = 0; i <= this->stack_count; i++) {
+    // the points are of quads are like this
+    // i'th vertex's j'th vertex, (i+1)'th vertex's j'th vertex,
+    // (i+1)'th vertex's (j+1)'th vertex, i'th vertex's (j+1)'th vertex
+    if (i == 0 || i >= this->stack_count - 1) {
+      continue;
+    }
+    for (int j = 0; j < this->sector_count; j++) {
+      // draw the quad
+      // calculate the vertex indices
+      // v1 = vertex[i][j], vertex[i][j+1], vertex[i+1][j+2]
+      // v2 = vertex[i+1][j], vertex[i+1][j+1], vertex[i+1][j+2]
+      // .....
+      float v1[3], v2[3], v3[3], v4[3];
+      // v1
+      v1[0] = vertices[i][j * 3];
+      v1[1] = vertices[i][j * 3 + 1];
+      v1[2] = vertices[i][j * 3 + 2];
+
+      // v2
+      v2[0] = vertices[i + 1][j * 3];
+      v2[1] = vertices[i + 1][j * 3 + 1];
+      v2[2] = vertices[i + 1][j * 3 + 2];
+
+      // v3
+      v3[0] = vertices[i + 1][(j + 1) * 3];
+      v3[1] = vertices[i + 1][(j + 1) * 3 + 1];
+      v3[2] = vertices[i + 1][(j + 1) * 3 + 2];
+
+      // v4
+      v4[0] = vertices[i][(j + 1) * 3];
+      v4[1] = vertices[i][(j + 1) * 3 + 1];
+      v4[2] = vertices[i][(j + 1) * 3 + 2];
+
+      // draw the quad with two triangles
+      this->draw_triangle(v1, v2, v3, this->sides_color_1);
+      this->draw_triangle(v1, v3, v4, this->sides_color_2);
     }
   }
 }
@@ -122,12 +163,7 @@ void octahedron::draw_partial_cylinder(double radius, double height,
 
 void octahedron::draw_triangle(float a[3], float b[3], float c[3],
                                float color[3], bool draw_bottom_cylinder) {
-  glBegin(GL_TRIANGLES);
-  glColor3fv(color);
-  glVertex3fv(a);
-  glVertex3fv(b);
-  glVertex3fv(c);
-  glEnd();
+  this->draw_triangle(a, b, c, color);
 
   // draw the cylinder with the specified radius
   // and height will be the distance between the points a and b
@@ -165,6 +201,16 @@ void octahedron::draw_triangle(float a[3], float b[3], float c[3],
   glTranslatef(-this->cylinder_dist_x, 0.0f, 0.0f);
   // revert the rotation
   glRotatef(-45.0f, 0.0f, 1.0f, 0.0f);
+}
+
+void octahedron::draw_triangle(float a[3], float b[3], float c[3],
+                               float color[3]) {
+  glBegin(GL_TRIANGLES);
+  glColor3fv(color);
+  glVertex3fv(a);
+  glVertex3fv(b);
+  glVertex3fv(c);
+  glEnd();
 }
 
 void octahedron::draw_octahedron() {
@@ -218,9 +264,9 @@ void octahedron::draw_octahedron() {
   // rotate -180 degrees about the x axis
   glRotatef(-180.0f, 1.0f, 0.0f, 0.0f);
   // test draw of sphere
-  glTranslatef(0.0f, 2.0f, 2.0f);
-  this->draw_partial_sphere(0.5f, this->vertex_color_1);
-  glTranslatef(0.0f, -2.0f, -2.0f);
+  glTranslatef(0.0f, 2.0f, 0.0f);
+  this->draw_partial_sphere(this->radius, this->cylinder_color);
+  glTranslatef(0.0f, -2.0f, 0.0f);
   // reverse the global rotation
   glRotatef(-this->angleZ, 0.0f, 0.0f, 1.0f);
   glRotatef(-this->angleY, 0.0f, 1.0f, 0.0f);
