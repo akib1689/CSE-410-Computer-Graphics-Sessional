@@ -14,15 +14,16 @@ private:
   float sides_color_2[3] = {0.0f, 1.0f, 1.0f}; // cyan
 
   // triangle origin point
-  float top[3] = {0.0f, 0.0f, 1.0f};   // top
-  float left[3] = {1.0f, 0.0f, 0.0f};  // left
-  float right[3] = {0.0f, 1.0f, 0.0f}; // right
+  float top[3] = {0.0f, 0.0f, 1.0f};   // top - z axis
+  float left[3] = {1.0f, 0.0f, 0.0f};  // left - x axis
+  float right[3] = {0.0f, 1.0f, 0.0f}; // right - y axis
 
   float angleX = 0.0f;
   float angleY = 0.0f;
   float angleZ = 0.0f;
 
-  float radius = 0.0f; // radius of the cylinder
+  float cylinder_radius = 0.0f; // radius of the cylinder
+  float sphere_radius = 1.0f;   // radius of the sphere
 
   int cylinder_slices = 64; // number of slices in the cylinder
   int stack_count = 20;     // number of stacks of sphere

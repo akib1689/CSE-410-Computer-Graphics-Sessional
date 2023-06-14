@@ -25,13 +25,13 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
 
   // calculate the steps
   double stack_step =
-      M_PI / this->stack_count; // phi of the sphere (determines the height)
+      M_PI / this->stack_count / 2; // phi of the sphere (determines the height)
   double sector_step =
-      2 * M_PI / this->sector_count; // theta of the sphere xy plane
+      M_PI / this->sector_count / 2; // theta of the sphere xy plane
   for (int i = 0; i <= stack_count + 1; i++) {
     // we are generating two more points than needed
     // calculate the phi
-    double phi = M_PI / 2 - i * stack_step; // phi = 90 - i * phi_step
+    double phi = i * stack_step; // phi = 90 - i * phi_step
     double xy = radius * cos(phi);          // r * cos(phi)
     double z = radius * sin(phi);
     // local vector to store the vertices
@@ -59,7 +59,7 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
     // the points are of quads are like this
     // i'th vertex's j'th vertex, (i+1)'th vertex's j'th vertex,
     // (i+1)'th vertex's (j+1)'th vertex, i'th vertex's (j+1)'th vertex
-    if (i == 0 || i >= this->stack_count - 1) {
+    if (i >= this->stack_count) {
       continue;
     }
     for (int j = 0; j < this->sector_count; j++) {
@@ -90,13 +90,13 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
       v4[2] = vertices[i][(j + 1) * 3 + 2];
 
       // draw the quad with two triangles
-      this->draw_triangle(v1, v2, v3, this->sides_color_1);
-      this->draw_triangle(v1, v3, v4, this->sides_color_2);
+      this->draw_triangle(v1, v2, v3, color);
+      this->draw_triangle(v1, v3, v4, color);
     }
   }
 }
 
-void octahedron::draw_partial_cylinder(double radius, double height,
+void octahedron::draw_partial_cylinder(double cylinder_radius, double height,
                                        float color[3], int multiplier) {
 
   double step = (M_PI - this->phi) / this->cylinder_slices;
@@ -119,8 +119,8 @@ void octahedron::draw_partial_cylinder(double radius, double height,
   vector<double> vertices;
   for (int i = 0; i <= this->cylinder_slices + 1; i++) {
     double theta = i * step;
-    double x = radius * cos(theta);
-    double y = radius * sin(theta);
+    double x = cylinder_radius * cos(theta);
+    double y = cylinder_radius * sin(theta);
     double z = height;
     vertices.push_back(x);
     vertices.push_back(y);
@@ -178,7 +178,7 @@ void octahedron::draw_triangle(float a[3], float b[3], float c[3],
   glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
   // translate the axis at (0,cylinder distance,0)
   glTranslatef(0.0f, this->cylinder_dist_x, 0.0f);
-  this->draw_partial_cylinder(this->radius, magnitude / 2.0f,
+  this->draw_partial_cylinder(this->cylinder_radius, magnitude / 2.0f,
                               this->cylinder_color, -1);
   // revert the translation
   glTranslatef(0.0f, -this->cylinder_dist_x, 0.0f);
@@ -195,7 +195,7 @@ void octahedron::draw_triangle(float a[3], float b[3], float c[3],
   glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
   // translate the axis at (cylinder diatance,0,0)
   glTranslatef(this->cylinder_dist_x, 0.0f, 0.0f);
-  this->draw_partial_cylinder(this->radius, magnitude / 2.0f,
+  this->draw_partial_cylinder(this->cylinder_radius, magnitude / 2.0f,
                               this->cylinder_color, 1);
   // revert the translation
   glTranslatef(-this->cylinder_dist_x, 0.0f, 0.0f);
@@ -221,51 +221,39 @@ void octahedron::draw_octahedron() {
   glRotatef(this->angleZ, 0.0f, 0.0f, 1.0f);
 
   // draw the first half
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
+  for(int i = 0; i< 4; i++){
+    if(i % 2 == 0){
+      this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
                       true);
-  // rotate 90 degrees about the y axis
-  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
+    } else {
+      this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
                       true);
-  // rotate 90 degrees about the y axis
-  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
-                      true);
-  // rotate 90 degrees about the y axis
-  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
-                      true);
-  // rotate 90 degrees about the y axis
-  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-
-  // now the original state is re stored
+    }
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+  }
 
   // draw the other half
   // rotate 180 degrees about the x axis
   glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
-                      false);
-  // rotate 90 degrees about the y axis
-  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
-                      false);
-  // rotate 90 degrees about the y axis
-  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
-                      false);
-  // rotate 90 degrees about the y axis
-  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
-                      false);
-  // rotate 90 degrees about the y axis
-  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
 
+  for(int i=0; i<4; i++){
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+    if(i%2==0){
+      this->draw_triangle(this->top, this->left, this->right, this->sides_color_2,
+                      false);
+    }else {
+      this->draw_triangle(this->top, this->left, this->right, this->sides_color_1,
+                      false);
+    }
+  }
   // now the original state is re stored
   // rotate -180 degrees about the x axis
   glRotatef(-180.0f, 1.0f, 0.0f, 0.0f);
   // test draw of sphere
-  glTranslatef(0.0f, 2.0f, 0.0f);
-  this->draw_partial_sphere(this->radius, this->cylinder_color);
+  glTranslatef(0.0f, 1-this->cylinder_dist_x, 0.0f);
+  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+  this->draw_partial_sphere(this->cylinder_radius, this->vertex_color_1);
+  glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
   glTranslatef(0.0f, -2.0f, 0.0f);
   // reverse the global rotation
   glRotatef(-this->angleZ, 0.0f, 0.0f, 1.0f);
@@ -332,7 +320,7 @@ void octahedron::transform_to_sphere() {
   float radius_increment = slanted_distance * factor;
 
   // update the radius
-  this->radius += radius_increment;
+  this->cylinder_radius += radius_increment;
 
   // update the cylinder dist x
 
@@ -378,7 +366,7 @@ void octahedron::transform_to_octahedron() {
   float radius_increment = slanted_distance * factor;
 
   // update the radius
-  this->radius -= radius_increment;
+  this->cylinder_radius -= radius_increment;
 
   // update the cylinder dist x
   float slanted_dist_x = slanted_distance / cos(this->phi / 2.0f);
