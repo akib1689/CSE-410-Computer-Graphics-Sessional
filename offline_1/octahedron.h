@@ -23,7 +23,7 @@ private:
   float angleZ = 0.0f;
 
   float cylinder_radius = 0.0f; // radius of the cylinder
-  float sphere_radius = 1.0f;   // radius of the sphere
+  float sphere_radius = 0.0f;   // radius of the sphere
 
   int cylinder_slices = 64; // number of slices in the cylinder
   int stack_count = 20;     // number of stacks of sphere
@@ -31,14 +31,23 @@ private:
 
   float cylinder_dist_x = 1.41421356237f / 2.0f; // distance between
                                                  // the center and the cylinder
+  float sphere_center_x = 1.0f;                  // distance between
+                                                 // the center and the sphere
+  float sphere_z_limit = M_PI / 2.4;             // z angle limit for the sphere
+  bool triangle_visibility = true;               // visibility of the triangles
+  bool cylinder_visibility = true;               // visibility of the cylinder
 
   float phi = acos(-1.0f / 3.0f); // angle between the top and the side
 
-  // used for drawing the triangles
   void draw_triangle(float[3], float[3], float[3], float[3]);
-  void draw_triangle(float[3], float[3], float[3], float[3], bool);
+  void draw_face(float[3], float[3], float[3], float[3], bool);
   void draw_partial_cylinder(double, double, float[3], int);
   void draw_partial_sphere(double, float[3]);
+  void draw_axis();
+  void draw_quads(float[3], float[3], float[3], float[3]);
+
+  // updating radius
+  void update_sphere_param();
 
 public:
   octahedron(/* args */);
@@ -55,4 +64,7 @@ public:
   void transform_to_sphere(); // , key listener
 
   void transform_to_octahedron(); // . key listener
+
+  void toggle_triangle_visibility(); // v key listener
+  void toggle_cylinder_visibility(); // c key listener
 };

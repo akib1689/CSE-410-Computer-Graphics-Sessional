@@ -160,6 +160,22 @@ void key_poressed(unsigned char key, int x, int y) {
     up[1] = cross[1] * sin(-M_PI / 180) + up[1] * cos(-M_PI / 180);
     up[2] = cross[2] * sin(-M_PI / 180) + up[2] * cos(-M_PI / 180);
     break;
+  case 'v':
+    // change the triangle visibility
+    octahedron.toggle_triangle_visibility();
+    break;
+  case 'V':
+    // change the vertex visibility
+    octahedron.toggle_triangle_visibility();
+    break;
+  case 'c':
+    // change the cylinder visibility
+    octahedron.toggle_cylinder_visibility();
+    break;
+  case 'C':
+    // change the cylinder visibility
+    octahedron.toggle_cylinder_visibility();
+    break;
   default:
     break;
   }
