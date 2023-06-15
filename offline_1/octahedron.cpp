@@ -52,38 +52,27 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
       // z = r * sin(phi)
       double x = xy * cos(theta);
       double y = xy * sin(theta);
-      // if the magnitude (x*x) + (y*y) is greater than the clipping distance
-      // then keep the smaller value of x and y
-      // and the larger value should be clipping distance
-      double magnitude = x * x + y * y;
-      magnitude = sqrt(magnitude);
-      if (magnitude > this->clipping_distance) {
-        // find the absolute value of x and y
-        double abs_x = abs(x);
-        double abs_y = abs(y);
-        // find the smaller value
-        double smaller = min(abs_x, abs_y);
-        if (smaller == abs_x) {
-          // set the value of y to clipping distance
-          // but keep the sign of y
-          y = this->clipping_distance * y / abs_y;
-        } else {
-          // set the value of x to clipping distance
-          // but keep the sign of x
-          x = this->clipping_distance * x / abs_x;
-        }
+      if (abs(x) <= (abs(z) + 0.01f) && abs(y) <= (abs(z) + 0.01f)) {
+        // glPointSize(5.0f);
+        // glBegin(GL_POINTS);
+        // glColor3f(1.0f, 1.0f, 0.5f);
+        // glVertex3f(x, y, z);
+        // glEnd();
+        // add the vertex to the vector
+        local_vector.push_back(x);
+        local_vector.push_back(y);
+        local_vector.push_back(z);
+      } else {
+        // add the vertex to the vector
+        local_vector.push_back(0);
+        local_vector.push_back(0);
+        local_vector.push_back(z);
       }
-      // add the vertex to the vector
-      local_vector.push_back(x);
-      local_vector.push_back(y);
-      local_vector.push_back(z);
     }
     vertices.push_back(local_vector);
   }
-  // cout << "length of vertices: " << vertices.size() << endl;
   // now the vertices are generated
   // draw the quads using the vertices
-  // glRotatef(-this->sphere_z_limit, 0.0f, 0.0f, 1.0f);
   for (int i = 0; i < this->stack_count; i++) {
     // the points are of quads are like this
     // i'th vertex's j'th vertex, (i+1)'th vertex's j'th vertex,
@@ -387,31 +376,17 @@ void octahedron::transform_to_sphere() {
   if (magnitude_diff < 0.001f) {
     this->make_sphere();
     this->update_sphere_param();
+    this->increase_cylinder_param(magnitude_diff);
     return;
   }
 
-  // the slanted distance will be magnitude cos(60)
-  float slanted_distance = magnitude_diff * 0.5f;
-
-  // the radius will be slanted distance tan(phi/2)
-  float factor = tan(this->phi / 2.0f);
-
-  float radius_increment = slanted_distance * factor;
-
-  // update the radius
-  this->cylinder_radius += radius_increment;
-
-  // update the cylinder dist x
-
-  // slanted distance / cos(phi/2)
-  float slanted_dist_x = slanted_distance / cos(this->phi / 2.0f);
-  this->cylinder_dist_x -= slanted_dist_x;
+  this->increase_cylinder_param(magnitude_diff);
 
   // update radius
   this->update_sphere_param();
 
   // debug
-  this->print_all_parameters();
+  // this->print_all_parameters();
 }
 
 void octahedron::transform_to_octahedron() {
@@ -448,26 +423,12 @@ void octahedron::transform_to_octahedron() {
 
   magnitude = sqrt(magnitude);
 
-  // the slanted distance will be magnitude cos(60)
-  float slanted_distance = magnitude * 0.5f;
-
-  // the radius will be slanted distance tan(phi/2)
-  float factor = tan(this->phi / 2.0f);
-
-  float radius_increment = slanted_distance * factor;
-
-  // update the radius
-  this->cylinder_radius -= radius_increment;
-
-  // update the cylinder dist x
-  float slanted_dist_x = slanted_distance / cos(this->phi / 2.0f);
-  this->cylinder_dist_x += slanted_dist_x;
-
+  this->decrease_cylinder_param(magnitude);
   // update radius
   this->update_sphere_param();
 
   // debug print
-  this->print_all_parameters();
+  // this->print_all_parameters();
 }
 /**
  * we take the top point
@@ -507,6 +468,41 @@ void octahedron::update_sphere_param() {
   // this->clipping_distance = magnitude_diff / 2.0f;
 }
 
+void octahedron::increase_cylinder_param(float magnitude) {
+  // the slanted distance will be magnitude cos(60)
+  float slanted_distance = magnitude * 0.5f;
+
+  // the radius will be slanted distance tan(phi/2)
+  float factor = tan(this->phi / 2.0f);
+
+  float radius_increment = slanted_distance * factor;
+
+  // update the radius
+  this->cylinder_radius += radius_increment;
+
+  // update the cylinder dist x
+
+  // slanted distance / cos(phi/2)
+  float slanted_dist_x = slanted_distance / cos(this->phi / 2.0f);
+  this->cylinder_dist_x -= slanted_dist_x;
+}
+
+void octahedron::decrease_cylinder_param(float magnitude) {
+  // the slanted distance will be magnitude cos(60)
+  float slanted_distance = magnitude * 0.5f;
+
+  // the radius will be slanted distance tan(phi/2)
+  float factor = tan(this->phi / 2.0f);
+
+  float radius_increment = slanted_distance * factor;
+
+  // update the radius
+  this->cylinder_radius -= radius_increment;
+
+  // update the cylinder dist x
+  float slanted_dist_x = slanted_distance / cos(this->phi / 2.0f);
+  this->cylinder_dist_x += slanted_dist_x;
+}
 void octahedron::draw_axis() {
   // draw x, y, z axis
   glBegin(GL_LINES);
