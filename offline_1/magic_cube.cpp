@@ -176,6 +176,14 @@ void key_poressed(unsigned char key, int x, int y) {
     // change the cylinder visibility
     octahedron.toggle_cylinder_visibility();
     break;
+  case 'b':
+    // change the sphere visibility
+    octahedron.toggle_sphere_visibility();
+    break;
+  case 'B':
+    // change the sphere visibility
+    octahedron.toggle_sphere_visibility();
+    break;
   default:
     break;
   }

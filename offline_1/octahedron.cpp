@@ -52,6 +52,27 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
       // z = r * sin(phi)
       double x = xy * cos(theta);
       double y = xy * sin(theta);
+      // if the magnitude (x*x) + (y*y) is greater than the clipping distance
+      // then keep the smaller value of x and y
+      // and the larger value should be clipping distance
+      double magnitude = x * x + y * y;
+      magnitude = sqrt(magnitude);
+      if (magnitude > this->clipping_distance) {
+        // find the absolute value of x and y
+        double abs_x = abs(x);
+        double abs_y = abs(y);
+        // find the smaller value
+        double smaller = min(abs_x, abs_y);
+        if (smaller == abs_x) {
+          // set the value of y to clipping distance
+          // but keep the sign of y
+          y = this->clipping_distance * y / abs_y;
+        } else {
+          // set the value of x to clipping distance
+          // but keep the sign of x
+          x = this->clipping_distance * x / abs_x;
+        }
+      }
       // add the vertex to the vector
       local_vector.push_back(x);
       local_vector.push_back(y);
@@ -267,48 +288,50 @@ void octahedron::draw_octahedron() {
   // now the original state is re stored
   // rotate -180 degrees about the x axis
   glRotatef(-180.0f, 1.0f, 0.0f, 0.0f);
+  if (this->sphere_visibility) {
 
-  // save state
-  glPushMatrix();
-  glTranslatef(0.0f, this->sphere_center_x, 0.0f);
-  glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-  this->draw_partial_sphere(this->sphere_radius, this->vertex_color_1);
-  // revert state
-  glPopMatrix();
-  // save state
-  glPushMatrix();
-  glTranslatef(0.0f, -this->sphere_center_x, 0.0f);
-  glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-  this->draw_partial_sphere(this->sphere_radius, this->vertex_color_1);
-  // revert state
-  glPopMatrix();
-  // save state
-  glPushMatrix();
-  glTranslatef(this->sphere_center_x, 0.0f, 0.0f);
-  glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_partial_sphere(this->sphere_radius, this->vertex_color_2);
-  // revert state
-  glPopMatrix();
-  // save state
-  glPushMatrix();
-  glTranslatef(-this->sphere_center_x, 0.0f, 0.0f);
-  glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_partial_sphere(this->sphere_radius, this->vertex_color_2);
-  // revert state
-  glPopMatrix();
-  // save state
-  glPushMatrix();
-  glTranslatef(0.0f, 0.0f, this->sphere_center_x);
-  this->draw_partial_sphere(this->sphere_radius, this->vertex_color_3);
-  // revert state
-  glPopMatrix();
-  // save state
-  glPushMatrix();
-  glTranslatef(0.0f, 0.0f, -this->sphere_center_x);
-  glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-  this->draw_partial_sphere(this->sphere_radius, this->vertex_color_3);
-  // revert state
-  glPopMatrix();
+    // save state
+    glPushMatrix();
+    glTranslatef(0.0f, this->sphere_center_x, 0.0f);
+    glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+    this->draw_partial_sphere(this->sphere_radius, this->vertex_color_1);
+    // revert state
+    glPopMatrix();
+    // save state
+    glPushMatrix();
+    glTranslatef(0.0f, -this->sphere_center_x, 0.0f);
+    glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+    this->draw_partial_sphere(this->sphere_radius, this->vertex_color_1);
+    // revert state
+    glPopMatrix();
+    // save state
+    glPushMatrix();
+    glTranslatef(this->sphere_center_x, 0.0f, 0.0f);
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+    this->draw_partial_sphere(this->sphere_radius, this->vertex_color_2);
+    // revert state
+    glPopMatrix();
+    // save state
+    glPushMatrix();
+    glTranslatef(-this->sphere_center_x, 0.0f, 0.0f);
+    glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+    this->draw_partial_sphere(this->sphere_radius, this->vertex_color_2);
+    // revert state
+    glPopMatrix();
+    // save state
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, this->sphere_center_x);
+    this->draw_partial_sphere(this->sphere_radius, this->vertex_color_3);
+    // revert state
+    glPopMatrix();
+    // save state
+    glPushMatrix();
+    glTranslatef(0.0f, 0.0f, -this->sphere_center_x);
+    glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+    this->draw_partial_sphere(this->sphere_radius, this->vertex_color_3);
+    // revert state
+    glPopMatrix();
+  }
   // reverse the global rotation
   glRotatef(-this->angleZ, 0.0f, 0.0f, 1.0f);
   glRotatef(-this->angleY, 0.0f, 1.0f, 0.0f);
@@ -336,11 +359,14 @@ void octahedron::transform_to_sphere() {
   // 16 then set the new point to the center + the new line segment equation is
   // point * 15 + center * 1 / 16 for all coordinates
 
+  if (is_sphere) {
+    return;
+  }
+
   // save all the three points of any point (top, left, right) in a variable
   // then transform the point to the center
   float temp_top[3] = {this->top[0], this->top[1], this->top[2]};
 
-  // transform the above code to loop
   for (int i = 0; i < 3; i++) {
     this->top[i] = (this->top[i] * 15.0f + 1.0 / 3.0f) / 16.0f;
     this->left[i] = (this->left[i] * 15.0f + 1.0 / 3.0f) / 16.0f;
@@ -357,6 +383,12 @@ void octahedron::transform_to_sphere() {
                          diff_top[2] * diff_top[2];
 
   magnitude_diff = sqrt(magnitude_diff);
+
+  if (magnitude_diff < 0.001f) {
+    this->make_sphere();
+    this->update_sphere_param();
+    return;
+  }
 
   // the slanted distance will be magnitude cos(60)
   float slanted_distance = magnitude_diff * 0.5f;
@@ -383,6 +415,12 @@ void octahedron::transform_to_octahedron() {
   // if any of the coordinates is greater than 1 then the transformation is not
   // needed
   // find the magnitude of any of the vectors
+  if (is_sphere) {
+    this->make_octahedron();
+    this->update_sphere_param();
+    return;
+  }
+
   float magnitude = this->top[0] * this->top[0] + this->top[1] * this->top[1] +
                     this->top[2] * this->top[2];
 
@@ -459,7 +497,7 @@ void octahedron::update_sphere_param() {
   // update the radius
   this->sphere_radius = sqrt(3.0f) / 2.0f * magnitude_diff;
   this->sphere_center_x = this->top[2] - magnitude_diff / 2.0f;
-  // this->sphere_z_limit = acos((this->top[2]) / magnitude_top);
+  this->clipping_distance = magnitude_diff / 2.0f;
 }
 
 void octahedron::draw_axis() {
@@ -501,4 +539,40 @@ void octahedron::draw_quads(float a[3], float b[3], float c[3], float d[3]) {
     glVertex3f(points[i][0], points[i][1], points[i][2]);
   }
   glEnd();
+}
+
+void octahedron::make_sphere() {
+  this->save_restoring_values();
+  // set the top, left , right at same point (1/3, 1/3, 1/3)
+  for (int i = 0; i < 3; i++) {
+    this->top[i] = 1.0f / 3.0f;
+    this->left[i] = 1.0f / 3.0f;
+    this->right[i] = 1.0f / 3.0f;
+  }
+  this->is_sphere = true;
+}
+
+void octahedron::make_octahedron() {
+  this->restore_values();
+  this->is_sphere = false;
+}
+
+void octahedron::save_restoring_values() {
+  for (int i = 0; i < 3; i++) {
+    this->restoring_top[i] = this->top[i];
+    this->restoring_left[i] = this->left[i];
+    this->restoring_right[i] = this->right[i];
+  }
+}
+
+void octahedron::restore_values() {
+  for (int i = 0; i < 3; i++) {
+    this->top[i] = this->restoring_top[i];
+    this->left[i] = this->restoring_left[i];
+    this->right[i] = this->restoring_right[i];
+  }
+}
+
+void octahedron::toggle_sphere_visibility() {
+  this->sphere_visibility = !this->sphere_visibility;
 }

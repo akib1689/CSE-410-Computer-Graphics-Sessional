@@ -18,6 +18,10 @@ private:
   float left[3] = {1.0f, 0.0f, 0.0f};  // left - x axis
   float right[3] = {0.0f, 1.0f, 0.0f}; // right - y axis
 
+  float restoring_top[3];   // top - z axis
+  float restoring_left[3];  // left - x axis
+  float restoring_right[3]; // right - y axis
+
   float angleX = 0.0f;
   float angleY = 0.0f;
   float angleZ = 0.0f;
@@ -29,6 +33,10 @@ private:
   int stack_count = 20;     // number of stacks of sphere
   int sector_count = 25;    // number of sectors of sphere
 
+  bool is_sphere = false; // is the octahedron a sphere or not
+
+  float clipping_distance = 1.0f; // clipping distance
+
   float cylinder_dist_x = 1.41421356237f / 2.0f; // distance between
                                                  // the center and the cylinder
   float sphere_center_x = 1.0f;                  // distance between
@@ -36,6 +44,7 @@ private:
   float sphere_z_limit = M_PI / 2.4;             // z angle limit for the sphere
   bool triangle_visibility = true;               // visibility of the triangles
   bool cylinder_visibility = true;               // visibility of the cylinder
+  bool sphere_visibility = true;                 // visibility of the sphere
 
   float phi = acos(-1.0f / 3.0f); // angle between the top and the side
 
@@ -48,6 +57,17 @@ private:
 
   // updating radius
   void update_sphere_param();
+
+  // make the octahedron a sphere
+  void make_sphere();
+
+  // make the octahedron an octahedron
+  void make_octahedron();
+
+  // save the restoring values
+  void save_restoring_values();
+  // restore the values
+  void restore_values();
 
 public:
   octahedron(/* args */);
@@ -67,4 +87,5 @@ public:
 
   void toggle_triangle_visibility(); // v key listener
   void toggle_cylinder_visibility(); // c key listener
+  void toggle_sphere_visibility();   // b key listener
 };
