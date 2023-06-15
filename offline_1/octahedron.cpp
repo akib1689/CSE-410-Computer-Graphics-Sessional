@@ -409,6 +409,9 @@ void octahedron::transform_to_sphere() {
 
   // update radius
   this->update_sphere_param();
+
+  // debug
+  this->print_all_parameters();
 }
 
 void octahedron::transform_to_octahedron() {
@@ -462,6 +465,9 @@ void octahedron::transform_to_octahedron() {
 
   // update radius
   this->update_sphere_param();
+
+  // debug print
+  this->print_all_parameters();
 }
 /**
  * we take the top point
@@ -497,7 +503,8 @@ void octahedron::update_sphere_param() {
   // update the radius
   this->sphere_radius = sqrt(3.0f) / 2.0f * magnitude_diff;
   this->sphere_center_x = this->top[2] - magnitude_diff / 2.0f;
-  this->clipping_distance = magnitude_diff / 2.0f;
+
+  // this->clipping_distance = magnitude_diff / 2.0f;
 }
 
 void octahedron::draw_axis() {
@@ -575,4 +582,37 @@ void octahedron::restore_values() {
 
 void octahedron::toggle_sphere_visibility() {
   this->sphere_visibility = !this->sphere_visibility;
+}
+
+void octahedron::print_all_parameters() {
+  // the top, left, right
+  std::cout << "top: ";
+  for (int i = 0; i < 3; i++) {
+    std::cout << this->top[i] << " ";
+  }
+  std::cout << std::endl;
+  std::cout << "left: ";
+  for (int i = 0; i < 3; i++) {
+    std::cout << this->left[i] << " ";
+  }
+  std::cout << std::endl;
+  std::cout << "right: ";
+  for (int i = 0; i < 3; i++) {
+    std::cout << this->right[i] << " ";
+  }
+  std::cout << std::endl;
+
+  // the sphere parameters
+  std::cout << "sphere center x: " << this->sphere_center_x << std::endl;
+  std::cout << "sphere radius: " << this->sphere_radius << std::endl;
+
+  // the clipping distance
+  std::cout << "clipping distance: " << this->clipping_distance << std::endl;
+
+  // cylinder parameters
+  std::cout << "cylinder center x: " << this->cylinder_dist_x << std::endl;
+  std::cout << "cylinder radius: " << this->cylinder_radius << std::endl;
+
+  cout << "----------------------------------------------------------------"
+       << endl;
 }

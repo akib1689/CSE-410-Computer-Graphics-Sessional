@@ -30,8 +30,8 @@ private:
   float sphere_radius = 0.0f;   // radius of the sphere
 
   int cylinder_slices = 64; // number of slices in the cylinder
-  int stack_count = 20;     // number of stacks of sphere
-  int sector_count = 25;    // number of sectors of sphere
+  int stack_count = 32;     // number of stacks of sphere
+  int sector_count = 32;    // number of sectors of sphere
 
   bool is_sphere = false; // is the octahedron a sphere or not
 
@@ -68,6 +68,9 @@ private:
   void save_restoring_values();
   // restore the values
   void restore_values();
+
+  // debug print
+  void print_all_parameters();
 
 public:
   octahedron(/* args */);
