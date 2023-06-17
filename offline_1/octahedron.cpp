@@ -8,12 +8,71 @@
 #include <iostream>
 #include <vector>
 
-#include "octahedron.h"
 using namespace std;
+#include "octahedron.h"
 
 octahedron::octahedron(/* args */) {}
 
 octahedron::~octahedron() {}
+
+// generate vertices for +X face only by intersecting 2 circular planes
+// (longitudinal and latitudinal) at the given longitude/latitude angles
+vector<vector<float>> octahedron::buildUnitPositiveX(int subdivision) {
+  const float DEG2RAD = acos(-1) / 180.0f;
+
+  vector<vector<float>> vertices;
+  float n1[3]; // normal of longitudinal plane rotating along Y-axis
+  float n2[3]; // normal of latitudinal plane rotating along Z-axis
+  float v[3];  // direction vector intersecting 2 planes, n1 x n2
+  float a1;    // longitudinal angle along Y-axis
+  float a2;    // latitudinal angle along Z-axis
+
+  // compute the number of vertices per row, 2^n + 1
+  int pointsPerRow = (int)pow(2, subdivision) + 1;
+
+  // rotate latitudinal plane from 45 to -45 degrees along Z-axis
+  // (top-to-bottom)
+  for (unsigned int i = 0; i < pointsPerRow; ++i) {
+    // normal for latitudinal plane
+    // if latitude angle is 0, then normal vector of latitude plane is
+    // n2=(0,1,0) therefore, it is rotating (0,1,0) vector by latitude angle a2
+    a2 = DEG2RAD * (45.0f - 90.0f * i / (pointsPerRow - 1));
+    n2[0] = -sin(a2);
+    n2[1] = cos(a2);
+    n2[2] = 0;
+    vector<float> row;
+    // rotate longitudinal plane from -45 to 45 along Y-axis (left-to-right)
+    for (unsigned int j = 0; j < pointsPerRow; ++j) {
+      // normal for longitudinal plane
+      // if longitude angle is 0, then normal vector of longitude is n1=(0,0,-1)
+      // therefore, it is rotating (0,0,-1) vector by longitude angle a1
+      a1 = DEG2RAD * (-45.0f + 90.0f * j / (pointsPerRow - 1));
+      n1[0] = -sin(a1);
+      n1[1] = 0;
+      n1[2] = -cos(a1);
+
+      // find direction vector of intersected line, n1 x n2
+      v[0] = n1[1] * n2[2] - n1[2] * n2[1];
+      v[1] = n1[2] * n2[0] - n1[0] * n2[2];
+      v[2] = n1[0] * n2[1] - n1[1] * n2[0];
+
+      // normalize direction vector
+      float scale =
+          this->sphere_radius / sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+      v[0] *= scale;
+      v[1] *= scale;
+      v[2] *= scale;
+
+      // add a vertex into array
+      row.push_back(v[0]);
+      row.push_back(v[1]);
+      row.push_back(v[2]);
+    }
+    vertices.push_back(row);
+  }
+
+  return vertices;
+}
 
 void octahedron::draw_partial_sphere(double radius, float color[3]) {
 
@@ -24,143 +83,64 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
   // glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
 
   // generate the vertices
-  vector<vector<float>> vertices;
-  // there are stack_count + 1 vectors each of which contains
-  // sector_count + 1 vertices
+  int division = 4;
 
-  // calculate the steps
-  double stack_step =
-      this->sphere_z_limit /
-      this->stack_count; // phi of the sphere (determines the height)
-  double sector_step =
-      2 * M_PI / this->sector_count; // theta of the sphere xy plane
+  // compute the number of vertices per row, 2^n + 1
+  int pointsPerRow = (int)pow(2, division) + 1;
+  vector<vector<float>> vertices = this->buildUnitPositiveX(division);
+  // vector<vector<float>> vertices_gen;
 
-  double last_level_x[this->sector_count + 1];
-  double last_level_y[this->sector_count + 1];
+  // save state
+  glPushMatrix();
+  // rorate the sphere by 90 degrees about the y axis
+  glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
 
-  for (int i = 0; i <= stack_count; i++) {
-    // we are generating two more points than needed
-    // calculate the phi
-    double phi = this->sphere_z_limit - i * stack_step;
-    double xy = radius * cos(phi); // r * cos(phi)
-    double z = radius * sin(phi);
-    // local vector to store the vertices
-    vector<float> local_vector; // holds the vertices for a single phi
-    double last_x = 0.0f;
-    double last_y = 0.0f;
-    double last_quadrant_x[this->sector_count / 8];
-    double last_quadrant_y[this->sector_count / 8];
-    for (int j = 0; j <= this->sector_count; j++) {
-      // calculate the theta
-      double theta = j * sector_step;
-      // calculate the x, y, z
-      // x = r * cos(phi) * cos(theta)
-      // y = r * cos(phi) * sin(theta)
-      // z = r * sin(phi)
-      double x = xy * cos(theta);
-      double y = xy * sin(theta);
-      if (abs(x) <= (abs(z) + 0.01f) && abs(y) <= (abs(z) + 0.01f)) {
-        // glPointSize(5.0f);
-        // glBegin(GL_POINTS);
-        // glColor3f(1.0f, 1.0f, 0.5f);
-        // glVertex3f(x, y, z);
-        // glEnd();
-        // add the vertex to the vector
-        last_level_x[j] = x;
-        last_level_y[j] = y;
-        last_x = x;
-        last_y = y;
-        last_quadrant_x[j % (this->sector_count / 8)] = x;
-        last_quadrant_y[j % (this->sector_count / 8)] = y;
-        local_vector.push_back(x);
-        local_vector.push_back(y);
-        local_vector.push_back(z);
-        local_vector.push_back(1);
-      } else {
-        // glPointSize(5.0f);
-        // glBegin(GL_POINTS);
-        // glColor3f(1.0f, 1.0f, 0.5f);
-        // glVertex3f(x, y, z);
-        // glEnd();
-        // divide 2*pi into 8 parts (each part has pi/4)
-        // one will use the last point
-        // other will use mirror of the last point
-        if (((int)(theta / M_PI * 4)) % 2 == 1) {
-          // odd
-          local_vector.push_back(last_x);
-          local_vector.push_back(last_y);
-          last_quadrant_x[j % (this->sector_count / 8)] = last_x;
-          last_quadrant_y[j % (this->sector_count / 8)] = last_y;
-        } else {
-          // even
-          int last_quad_index = (this->sector_count / 8) -
-                                j % (this->sector_count / 8) - 1; // 0 to 7
-
-          // last_quad_index = j % (this->sector_count / 8);
-          local_vector.push_back(last_quadrant_x[last_quad_index] * x / abs(x));
-          local_vector.push_back(last_quadrant_y[last_quad_index] * y / abs(y));
-          // glPointSize(5.0f);
-          // glBegin(GL_POINTS);
-          // glColor3f(1.0f, 0.0f, 0.5f);
-          // glVertex3f(x, y, z);
-          // glEnd();
-        }
-        local_vector.push_back(z);
-        local_vector.push_back(0);
-      }
-    }
-    vertices.push_back(local_vector);
-  }
   // now the vertices are generated
   // draw the quads using the vertices
-  for (int i = 0; i < this->stack_count; i++) {
+  for (int i = 0; i < pointsPerRow - 1; i++) {
     // the points are of quads are like this
     // i'th vertex's j'th vertex, (i+1)'th vertex's j'th vertex,
     // (i+1)'th vertex's (j+1)'th vertex, i'th vertex's (j+1)'th vertex
-    if (i >= this->stack_count) {
-      continue;
-    }
-    for (int j = 0; j < this->sector_count; j++) {
+    for (int j = 0; j < pointsPerRow - 1; j++) {
       // draw the quad
       // calculate the vertex indices
       // v1 = vertex[i][j], vertex[i][j+1], vertex[i+1][j+2]
       // v2 = vertex[i+1][j], vertex[i+1][j+1], vertex[i+1][j+2]
       // .....
       float v1[3], v2[3], v3[3], v4[3];
-      bool visible[4];
+      // bool visible[4];
       // v1
-      v1[0] = vertices[i][j * 4];
-      v1[1] = vertices[i][j * 4 + 1];
-      v1[2] = vertices[i][j * 4 + 2];
-      visible[0] = vertices[i][j * 4 + 3];
+      v1[0] = vertices[i][j * 3];
+      v1[1] = vertices[i][j * 3 + 1];
+      v1[2] = vertices[i][j * 3 + 2];
+      // visible[0] = vertices[i][j * 4 + 3];
 
       // v2
-      v2[0] = vertices[i + 1][j * 4];
-      v2[1] = vertices[i + 1][j * 4 + 1];
-      v2[2] = vertices[i + 1][j * 4 + 2];
-      visible[1] = vertices[i + 1][j * 4 + 3];
+      v2[0] = vertices[i + 1][j * 3];
+      v2[1] = vertices[i + 1][j * 3 + 1];
+      v2[2] = vertices[i + 1][j * 3 + 2];
+      // visible[1] = vertices[i + 1][j * 4 + 3];
 
       // v3
-      v3[0] = vertices[i + 1][(j + 1) * 4];
-      v3[1] = vertices[i + 1][(j + 1) * 4 + 1];
-      v3[2] = vertices[i + 1][(j + 1) * 4 + 2];
-      visible[2] = vertices[i + 1][(j + 1) * 4 + 3];
+      v3[0] = vertices[i + 1][(j + 1) * 3];
+      v3[1] = vertices[i + 1][(j + 1) * 3 + 1];
+      v3[2] = vertices[i + 1][(j + 1) * 3 + 2];
+      // visible[2] = vertices[i + 1][(j + 1) * 3 + 3];
 
       // v4
-      v4[0] = vertices[i][(j + 1) * 4];
-      v4[1] = vertices[i][(j + 1) * 4 + 1];
-      v4[2] = vertices[i][(j + 1) * 4 + 2];
-      visible[3] = vertices[i][(j + 1) * 4 + 3];
+      v4[0] = vertices[i][(j + 1) * 3];
+      v4[1] = vertices[i][(j + 1) * 3 + 1];
+      v4[2] = vertices[i][(j + 1) * 3 + 2];
+      // visible[3] = vertices[i][(j + 1) * 3 + 3];
 
       // draw the quad
       this->draw_triangle(v1, v2, v3, color);
       this->draw_triangle(v1, v3, v4, color);
     }
   }
-  // glRotatef(this->sphere_z_limit, 0.0f, 0.0f, 1.0f);
 
   // revert the rotation
-  // glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+  glPopMatrix();
 }
 
 void octahedron::draw_partial_cylinder(double cylinder_radius, double height,
@@ -286,34 +266,10 @@ void octahedron::draw_triangle(float a[3], float b[3], float c[3],
   glEnd();
 }
 
-void octahedron::draw_triangle(float a[3], float b[3], float c[3],
-                               float color[3], bool visibility[3]) {
-  glBegin(GL_TRIANGLES);
-  if (visibility[0]) {
-    glColor3fv(color);
-  } else {
-    glColor3fv(this->background_color);
-  }
-  // draw point a
-  glVertex3fv(a);
-  if (visibility[1]) {
-    glColor3fv(color);
-  } else {
-    glColor3fv(this->background_color);
-  }
-  // draw point b
-  glVertex3fv(b);
-  if (visibility[2]) {
-    glColor3fv(color);
-  } else {
-    glColor3fv(this->background_color);
-  }
-  // draw point c
-  glVertex3fv(c);
-  glEnd();
-}
 void octahedron::draw_octahedron() {
 
+  // save state
+  glPushMatrix();
   // apply the transformation
   glRotatef(this->angleX, 1.0f, 0.0f, 0.0f);
   glRotatef(this->angleY, 0.0f, 1.0f, 0.0f);
@@ -393,9 +349,7 @@ void octahedron::draw_octahedron() {
     glPopMatrix();
   }
   // reverse the global rotation
-  glRotatef(-this->angleZ, 0.0f, 0.0f, 1.0f);
-  glRotatef(-this->angleY, 0.0f, 1.0f, 0.0f);
-  glRotatef(-this->angleX, 1.0f, 0.0f, 0.0f);
+  glPopMatrix();
 }
 
 void octahedron::rotateX(float angle) { this->angleX += angle; }
@@ -514,23 +468,7 @@ void octahedron::transform_to_octahedron() {
  */
 void octahedron::update_sphere_param() {
 
-  // flip for x coordinate
-  float temp_top_x[3] = {-this->top[0], this->top[1], this->top[2]};
-
-  float magnitude_top = this->top[0] * this->top[0] +
-                        this->top[1] * this->top[1] +
-                        this->top[2] * this->top[2];
-
-  magnitude_top = sqrt(magnitude_top);
-
-  // find the magnitude of the difference
-  float diff_top[3] = {this->top[0] - temp_top_x[0],
-                       this->top[1] - temp_top_x[1],
-                       this->top[2] - temp_top_x[2]};
-
-  float magnitude_diff = diff_top[0] * diff_top[0] + diff_top[1] * diff_top[1] +
-                         diff_top[2] * diff_top[2];
-  magnitude_diff = sqrt(magnitude_diff);
+  float magnitude_diff = 2 * abs(this->top[0]);
 
   // update the radius
   this->sphere_radius = sqrt(3.0f) / 2.0f * magnitude_diff;
@@ -578,13 +516,13 @@ void octahedron::draw_axis() {
   // draw x, y, z axis
   glBegin(GL_LINES);
   glColor3f(1.0f, 0.0f, 0.0f);
-  glVertex3f(-1.0f, 0.0f, 0.0f);
+  glVertex3f(0.0f, 0.0f, 0.0f);
   glVertex3f(1.0f, 0.0f, 0.0f);
   glColor3f(0.0f, 1.0f, 0.0f);
-  glVertex3f(0.0f, -1.0f, 0.0f);
+  glVertex3f(0.0f, 0.0f, 0.0f);
   glVertex3f(0.0f, 1.0f, 0.0f);
   glColor3f(0.0f, 0.0f, 1.0f);
-  glVertex3f(0.0f, 0.0f, -1.0f);
+  glVertex3f(0.0f, 0.0f, 0.0f);
   glVertex3f(0.0f, 0.0f, 1.0f);
   glEnd();
 }
@@ -672,9 +610,6 @@ void octahedron::print_all_parameters() {
   // the sphere parameters
   std::cout << "sphere center x: " << this->sphere_center_x << std::endl;
   std::cout << "sphere radius: " << this->sphere_radius << std::endl;
-
-  // the clipping distance
-  std::cout << "clipping distance: " << this->clipping_distance << std::endl;
 
   // cylinder parameters
   std::cout << "cylinder center x: " << this->cylinder_dist_x << std::endl;
