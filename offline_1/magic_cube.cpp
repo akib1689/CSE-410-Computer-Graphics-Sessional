@@ -7,7 +7,7 @@
 
 #include <cmath>
 
-#include "octahedron.h"
+#include "octahedron.cpp"
 
 using namespace std;
 
@@ -25,6 +25,21 @@ float *camera = new float[3];
 float *look = new float[3];
 // up vector
 float *up = new float[3];
+
+void draw_axis() {
+  // draw x, y, z axis
+  glBegin(GL_LINES);
+  glColor3f(1.0f, 0.0f, 0.0f);
+  glVertex3f(-1.0f, 0.0f, 0.0f);
+  glVertex3f(1.0f, 0.0f, 0.0f);
+  glColor3f(0.0f, 1.0f, 0.0f);
+  glVertex3f(0.0f, -1.0f, 0.0f);
+  glVertex3f(0.0f, 1.0f, 0.0f);
+  glColor3f(0.0f, 0.0f, 1.0f);
+  glVertex3f(0.0f, 0.0f, -1.0f);
+  glVertex3f(0.0f, 0.0f, 1.0f);
+  glEnd();
+}
 
 /* Initialize OpenGL Graphics */
 void initGL() {
@@ -51,7 +66,7 @@ void display() {
   gluLookAt(camera[0], camera[1], camera[2], look[0], look[1], look[2], up[0],
             up[1], up[2]);
 
-  glTranslatef(0.0f, 0.0f, -7.0f); // Move the origin to back
+  glTranslatef(-2.0f, -2.0f, -2.0f); // Move the origin to back
   octahedron.draw_octahedron();
   glTranslatef(0.0f, 0.0f, 7.0f); // Move the origin back to the center
   glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
@@ -184,6 +199,28 @@ void key_poressed(unsigned char key, int x, int y) {
     // change the sphere visibility
     octahedron.toggle_sphere_visibility();
     break;
+  case 'w':
+    // move the camera in the direction of up vector
+    // don't change the look position
+    camera[0] += up[0] * 0.1;
+    camera[1] += up[1] * 0.1;
+    camera[2] += up[2] * 0.1;
+    // new look vector
+    look_vec[0] = look[0] - camera[0];
+    look_vec[1] = look[1] - camera[1];
+    look_vec[2] = look[2] - camera[2];
+    break;
+  case 's':
+    // move the camera in the opposite direction of up vector
+    // don't change the look position
+    camera[0] -= up[0] * 0.1;
+    camera[1] -= up[1] * 0.1;
+    camera[2] -= up[2] * 0.1;
+    // new look vector
+    look_vec[0] = look[0] - camera[0];
+    look_vec[1] = look[1] - camera[1];
+    look_vec[2] = look[2] - camera[2];
+    break;
   default:
     break;
   }
@@ -275,10 +312,10 @@ void special_key_pressed(int key, int x, int y) {
 int main(int argc, char **argv) {
   look[0] = 0;
   look[1] = 0;
-  look[2] = -1;
-  camera[0] = 0;
-  camera[1] = 0;
-  camera[2] = 0;
+  look[2] = 0;
+  camera[0] = 1;
+  camera[1] = 1;
+  camera[2] = 1;
   up[0] = 0;
   up[1] = 1;
   up[2] = 0;

@@ -35,14 +35,21 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
   double sector_step =
       2 * M_PI / this->sector_count; // theta of the sphere xy plane
 
-  for (int i = 0; i <= stack_count + 1; i++) {
+  double last_level_x[this->sector_count + 1];
+  double last_level_y[this->sector_count + 1];
+
+  for (int i = 0; i <= stack_count; i++) {
     // we are generating two more points than needed
     // calculate the phi
-    double phi = this->sphere_z_limit + i * stack_step; // phi = i * phi_step
-    double xy = radius * cos(phi);                      // r * cos(phi)
+    double phi = this->sphere_z_limit - i * stack_step;
+    double xy = radius * cos(phi); // r * cos(phi)
     double z = radius * sin(phi);
     // local vector to store the vertices
     vector<float> local_vector; // holds the vertices for a single phi
+    double last_x = 0.0f;
+    double last_y = 0.0f;
+    double last_quadrant_x[this->sector_count / 8];
+    double last_quadrant_y[this->sector_count / 8];
     for (int j = 0; j <= this->sector_count; j++) {
       // calculate the theta
       double theta = j * sector_step;
@@ -59,14 +66,47 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
         // glVertex3f(x, y, z);
         // glEnd();
         // add the vertex to the vector
+        last_level_x[j] = x;
+        last_level_y[j] = y;
+        last_x = x;
+        last_y = y;
+        last_quadrant_x[j % (this->sector_count / 8)] = x;
+        last_quadrant_y[j % (this->sector_count / 8)] = y;
         local_vector.push_back(x);
         local_vector.push_back(y);
         local_vector.push_back(z);
+        local_vector.push_back(1);
       } else {
-        // add the vertex to the vector
-        local_vector.push_back(0);
-        local_vector.push_back(0);
+        // glPointSize(5.0f);
+        // glBegin(GL_POINTS);
+        // glColor3f(1.0f, 1.0f, 0.5f);
+        // glVertex3f(x, y, z);
+        // glEnd();
+        // divide 2*pi into 8 parts (each part has pi/4)
+        // one will use the last point
+        // other will use mirror of the last point
+        if (((int)(theta / M_PI * 4)) % 2 == 1) {
+          // odd
+          local_vector.push_back(last_x);
+          local_vector.push_back(last_y);
+          last_quadrant_x[j % (this->sector_count / 8)] = last_x;
+          last_quadrant_y[j % (this->sector_count / 8)] = last_y;
+        } else {
+          // even
+          int last_quad_index = (this->sector_count / 8) -
+                                j % (this->sector_count / 8) - 1; // 0 to 7
+
+          // last_quad_index = j % (this->sector_count / 8);
+          local_vector.push_back(last_quadrant_x[last_quad_index] * x / abs(x));
+          local_vector.push_back(last_quadrant_y[last_quad_index] * y / abs(y));
+          // glPointSize(5.0f);
+          // glBegin(GL_POINTS);
+          // glColor3f(1.0f, 0.0f, 0.5f);
+          // glVertex3f(x, y, z);
+          // glEnd();
+        }
         local_vector.push_back(z);
+        local_vector.push_back(0);
       }
     }
     vertices.push_back(local_vector);
@@ -87,27 +127,32 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
       // v2 = vertex[i+1][j], vertex[i+1][j+1], vertex[i+1][j+2]
       // .....
       float v1[3], v2[3], v3[3], v4[3];
+      bool visible[4];
       // v1
-      v1[0] = vertices[i][j * 3];
-      v1[1] = vertices[i][j * 3 + 1];
-      v1[2] = vertices[i][j * 3 + 2];
+      v1[0] = vertices[i][j * 4];
+      v1[1] = vertices[i][j * 4 + 1];
+      v1[2] = vertices[i][j * 4 + 2];
+      visible[0] = vertices[i][j * 4 + 3];
 
       // v2
-      v2[0] = vertices[i + 1][j * 3];
-      v2[1] = vertices[i + 1][j * 3 + 1];
-      v2[2] = vertices[i + 1][j * 3 + 2];
+      v2[0] = vertices[i + 1][j * 4];
+      v2[1] = vertices[i + 1][j * 4 + 1];
+      v2[2] = vertices[i + 1][j * 4 + 2];
+      visible[1] = vertices[i + 1][j * 4 + 3];
 
       // v3
-      v3[0] = vertices[i + 1][(j + 1) * 3];
-      v3[1] = vertices[i + 1][(j + 1) * 3 + 1];
-      v3[2] = vertices[i + 1][(j + 1) * 3 + 2];
+      v3[0] = vertices[i + 1][(j + 1) * 4];
+      v3[1] = vertices[i + 1][(j + 1) * 4 + 1];
+      v3[2] = vertices[i + 1][(j + 1) * 4 + 2];
+      visible[2] = vertices[i + 1][(j + 1) * 4 + 3];
 
       // v4
-      v4[0] = vertices[i][(j + 1) * 3];
-      v4[1] = vertices[i][(j + 1) * 3 + 1];
-      v4[2] = vertices[i][(j + 1) * 3 + 2];
+      v4[0] = vertices[i][(j + 1) * 4];
+      v4[1] = vertices[i][(j + 1) * 4 + 1];
+      v4[2] = vertices[i][(j + 1) * 4 + 2];
+      visible[3] = vertices[i][(j + 1) * 4 + 3];
 
-      // draw the quad with two triangles
+      // draw the quad
       this->draw_triangle(v1, v2, v3, color);
       this->draw_triangle(v1, v3, v4, color);
     }
@@ -241,6 +286,32 @@ void octahedron::draw_triangle(float a[3], float b[3], float c[3],
   glEnd();
 }
 
+void octahedron::draw_triangle(float a[3], float b[3], float c[3],
+                               float color[3], bool visibility[3]) {
+  glBegin(GL_TRIANGLES);
+  if (visibility[0]) {
+    glColor3fv(color);
+  } else {
+    glColor3fv(this->background_color);
+  }
+  // draw point a
+  glVertex3fv(a);
+  if (visibility[1]) {
+    glColor3fv(color);
+  } else {
+    glColor3fv(this->background_color);
+  }
+  // draw point b
+  glVertex3fv(b);
+  if (visibility[2]) {
+    glColor3fv(color);
+  } else {
+    glColor3fv(this->background_color);
+  }
+  // draw point c
+  glVertex3fv(c);
+  glEnd();
+}
 void octahedron::draw_octahedron() {
 
   // apply the transformation
@@ -305,7 +376,7 @@ void octahedron::draw_octahedron() {
     glTranslatef(-this->sphere_center_x, 0.0f, 0.0f);
     glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
     this->draw_partial_sphere(this->sphere_radius, this->vertex_color_2);
-    // revert state
+    // revert statead
     glPopMatrix();
     // save state
     glPushMatrix();

@@ -7,11 +7,13 @@ private:
   float vertex_color_2[3] = {0.0f, 1.0f, 0.0f}; // green
   float vertex_color_3[3] = {0.0f, 0.0f, 1.0f}; // blue
 
-  float cylinder_color[3] = {1.0f, 1.0f, 1.0f}; // white
+  float cylinder_color[3] = {1.0f, 1.0f, 0.0f}; // white
 
-  float sides_color_1[3] = {1.0f, 0.75f, 0.7f}; // pink
+  float sides_color_1[3] = {1.0f, 0.0f, 0.5f}; // pink
 
   float sides_color_2[3] = {0.0f, 1.0f, 1.0f}; // cyan
+
+  float background_color[3] = {0.1f, 0.1f, 0.1f}; // black
 
   // triangle origin point
   float top[3] = {0.0f, 0.0f, 1.0f};   // top - z axis
@@ -30,8 +32,10 @@ private:
   float sphere_radius = 0.0f;   // radius of the sphere
 
   int cylinder_slices = 64; // number of slices in the cylinder
-  int stack_count = 128;    // number of stacks of sphere
-  int sector_count = 256;   // number of sectors of sphere
+  int stack_count = 32;     // number of stacks of sphere
+  int sector_count = 128;   // number of sectors of sphere
+                            // ! we have to use power of 2 for sector count
+                            // ! for smoothing of the sphere
 
   bool is_sphere = false; // is the octahedron a sphere or not
 
@@ -41,7 +45,8 @@ private:
                                                  // the center and the cylinder
   float sphere_center_x = 1.0f;                  // distance between
                                                  // the center and the sphere
-  float sphere_z_limit = M_PI / 2.4;             // z angle limit for the sphere
+  float sphere_z_limit = M_PI / 2;               // z angle limit for the sphere
+  float sphere_z_start = M_PI / 6;               // z angle start for the sphere
   bool triangle_visibility = true;               // visibility of the triangles
   bool cylinder_visibility = true;               // visibility of the cylinder
   bool sphere_visibility = true;                 // visibility of the sphere
@@ -49,6 +54,7 @@ private:
   float phi = acos(-1.0f / 3.0f); // angle between the top and the side
 
   void draw_triangle(float[3], float[3], float[3], float[3]);
+  void draw_triangle(float[3], float[3], float[3], float[3], bool[3]);
   void draw_face(float[3], float[3], float[3], float[3], bool);
   void draw_partial_cylinder(double, double, float[3], int);
   void draw_partial_sphere(double, float[3]);
