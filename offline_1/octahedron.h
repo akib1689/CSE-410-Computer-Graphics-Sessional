@@ -52,6 +52,7 @@ private:
 
   // generating the vertices
   vector<vector<float>> buildUnitPositiveX(int);
+  vector<vector<float>> generate_vertecies(int);
 
   // updating radius
   void update_sphere_param();

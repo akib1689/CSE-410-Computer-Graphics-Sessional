@@ -74,6 +74,47 @@ vector<vector<float>> octahedron::buildUnitPositiveX(int subdivision) {
   return vertices;
 }
 
+/**
+ * generate vertices for x face only by scaling a square
+ */
+vector<vector<float>> octahedron::generate_vertecies(int subdivision) {
+  vector<vector<float>> vertices;
+
+  // take a square it fron -radius / 2 to +radius / 2
+  // divide it into 2^n + 1 points
+
+  // compute the number of vertices per row, 2^n + 1
+  int points_per_row = (int)pow(2, subdivision) + 1;
+  float step = this->sphere_radius / (points_per_row - 1);
+
+  // min y,z
+  float min_y = -this->sphere_radius / 2;
+  float min_z = -this->sphere_radius / 2;
+  float x = this->sphere_radius / 2;
+  for (int i = 0; i < points_per_row; i++) {
+    vector<float> row;
+    // y
+    float y = min_y + i * step;
+    for (int j = 0; j < points_per_row; j++) {
+      // z
+      float z = min_z + j * step;
+
+      // scale the square
+      float scale = this->sphere_radius / sqrt(x * x + y * y + z * z);
+      float x_scaled = x * scale;
+      float y_scaled = y * scale;
+      float z_scaled = z * scale;
+
+      // push the vertex
+      row.push_back(x_scaled);
+      row.push_back(y_scaled);
+      row.push_back(z_scaled);
+    }
+    vertices.push_back(row);
+  }
+
+  return vertices;
+}
 void octahedron::draw_partial_sphere(double radius, float color[3]) {
 
   // this->draw_axis();
@@ -87,7 +128,7 @@ void octahedron::draw_partial_sphere(double radius, float color[3]) {
 
   // compute the number of vertices per row, 2^n + 1
   int pointsPerRow = (int)pow(2, division) + 1;
-  vector<vector<float>> vertices = this->buildUnitPositiveX(division);
+  vector<vector<float>> vertices = this->generate_vertecies(division);
   // vector<vector<float>> vertices_gen;
 
   // save state
