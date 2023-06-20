@@ -265,16 +265,16 @@ void octahedron::draw_face(float a[3], float b[3], float c[3], float color[3],
   magnitude = sqrt(magnitude);
 
   if (this->cylinder_visibility) {
+    // save state
+    glPushMatrix();
     // rotate the axis by 45 degrees about the x axis
     glRotatef(45.0f, 1.0f, 0.0f, 0.0f);
     // translate the axis at (0,cylinder distance,0)
     glTranslatef(0.0f, this->cylinder_dist_x, 0.0f);
     this->draw_partial_cylinder(this->cylinder_radius, magnitude / 2.0f,
                                 this->cylinder_color, -1);
-    // revert the translation
-    glTranslatef(0.0f, -this->cylinder_dist_x, 0.0f);
-    // revert the rotation
-    glRotatef(-45.0f, 1.0f, 0.0f, 0.0f);
+    // revert the trtansformation
+    glPopMatrix();
   }
 
   // similarly for the other y sides
@@ -284,16 +284,16 @@ void octahedron::draw_face(float a[3], float b[3], float c[3], float color[3],
   }
 
   if (this->cylinder_visibility) {
+    // save state
+    glPushMatrix();
     // rotate the axis by 45 degrees about the y axis
     glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
     // translate the axis at (cylinder diatance,0,0)
     glTranslatef(this->cylinder_dist_x, 0.0f, 0.0f);
     this->draw_partial_cylinder(this->cylinder_radius, magnitude / 2.0f,
                                 this->cylinder_color, 1);
-    // revert the translation
-    glTranslatef(-this->cylinder_dist_x, 0.0f, 0.0f);
-    // revert the rotation
-    glRotatef(-45.0f, 0.0f, 1.0f, 0.0f);
+    // revert the transformation
+    glPopMatrix();
   }
 }
 
@@ -316,6 +316,8 @@ void octahedron::draw_octahedron() {
   glRotatef(this->angleY, 0.0f, 1.0f, 0.0f);
   glRotatef(this->angleZ, 0.0f, 0.0f, 1.0f);
 
+  // save state
+  glPushMatrix();
   // draw the first half
   for (int i = 0; i < 4; i++) {
     if (i % 2 == 0) {
@@ -333,18 +335,17 @@ void octahedron::draw_octahedron() {
   glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
 
   for (int i = 0; i < 4; i++) {
-    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-    if (i % 2 == 0) {
+    if (i % 2 == 1) {
       this->draw_face(this->top, this->left, this->right, this->sides_color_2,
                       false);
     } else {
       this->draw_face(this->top, this->left, this->right, this->sides_color_1,
                       false);
     }
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
   }
   // now the original state is re stored
-  // rotate -180 degrees about the x axis
-  glRotatef(-180.0f, 1.0f, 0.0f, 0.0f);
+  glPopMatrix();
   if (this->sphere_visibility) {
 
     // save state

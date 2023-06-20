@@ -30,13 +30,13 @@ void draw_axis() {
   // draw x, y, z axis
   glBegin(GL_LINES);
   glColor3f(1.0f, 0.0f, 0.0f);
-  glVertex3f(-1.0f, 0.0f, 0.0f);
+  glVertex3f(0.0f, 0.0f, 0.0f);
   glVertex3f(1.0f, 0.0f, 0.0f);
   glColor3f(0.0f, 1.0f, 0.0f);
-  glVertex3f(0.0f, -1.0f, 0.0f);
+  glVertex3f(0.0f, 0.0f, 0.0f);
   glVertex3f(0.0f, 1.0f, 0.0f);
   glColor3f(0.0f, 0.0f, 1.0f);
-  glVertex3f(0.0f, 0.0f, -1.0f);
+  glVertex3f(0.0f, 0.0f, 0.0f);
   glVertex3f(0.0f, 0.0f, 1.0f);
   glEnd();
 }
@@ -66,9 +66,11 @@ void display() {
   gluLookAt(camera[0], camera[1], camera[2], look[0], look[1], look[2], up[0],
             up[1], up[2]);
 
-  glTranslatef(-2.0f, -2.0f, -2.0f); // Move the origin to back
+  draw_axis();
+  glPushMatrix();
+  // glTranslatef(-2.0f, 0.0f, -2.0f); // Move the origin to back
   octahedron.draw_octahedron();
-  glTranslatef(0.0f, 0.0f, 7.0f); // Move the origin back to the center
+  glPopMatrix();
   glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
 }
 
@@ -95,6 +97,9 @@ void reshape(GLsizei width,
  * callback function for key press (normal keys)
  */
 void key_poressed(unsigned char key, int x, int y) {
+  // rate of rotation
+  float rate_rotation = PI_DEGREE / 12;
+  float rate_translation = 0.1;
   // calculate the look vector
   float *look_vec = new float[3];
   look_vec[0] = look[0] - camera[0];
@@ -103,7 +108,7 @@ void key_poressed(unsigned char key, int x, int y) {
 
   // normalize the up vector and look vector
   up = normalize(up);
-  look_vec = normalize(look_vec);
+  // look_vec = normalize(look_vec);
 
   // now find the cross product of up and look
   float *cross = new float[3];
@@ -114,16 +119,16 @@ void key_poressed(unsigned char key, int x, int y) {
   // the vectors up look and cross are perpendicular to each other
   switch (key) {
   case 'a':
-    octahedron.rotateY(-PI_DEGREE / 12);
+    octahedron.rotateY(-rate_rotation);
     break;
   case 'd':
-    octahedron.rotateY(PI_DEGREE / 12);
+    octahedron.rotateY(rate_rotation);
     break;
   case 'A':
-    octahedron.rotateY(-PI_DEGREE / 12);
+    octahedron.rotateY(-rate_rotation);
     break;
   case 'D':
-    octahedron.rotateX(PI_DEGREE / 12);
+    octahedron.rotateY(rate_rotation);
     break;
   case ',':
     octahedron.transform_to_sphere();
@@ -202,9 +207,9 @@ void key_poressed(unsigned char key, int x, int y) {
   case 'w':
     // move the camera in the direction of up vector
     // don't change the look position
-    camera[0] += up[0] * 0.1;
-    camera[1] += up[1] * 0.1;
-    camera[2] += up[2] * 0.1;
+    camera[0] += up[0] * rate_translation;
+    camera[1] += up[1] * rate_translation;
+    camera[2] += up[2] * rate_translation;
     // new look vector
     look_vec[0] = look[0] - camera[0];
     look_vec[1] = look[1] - camera[1];
@@ -213,9 +218,9 @@ void key_poressed(unsigned char key, int x, int y) {
   case 's':
     // move the camera in the opposite direction of up vector
     // don't change the look position
-    camera[0] -= up[0] * 0.1;
-    camera[1] -= up[1] * 0.1;
-    camera[2] -= up[2] * 0.1;
+    camera[0] -= up[0] * rate_translation;
+    camera[1] -= up[1] * rate_translation;
+    camera[2] -= up[2] * rate_translation;
     // new look vector
     look_vec[0] = look[0] - camera[0];
     look_vec[1] = look[1] - camera[1];
@@ -227,7 +232,6 @@ void key_poressed(unsigned char key, int x, int y) {
   look[0] = camera[0] + look_vec[0];
   look[1] = camera[1] + look_vec[1];
   look[2] = camera[2] + look_vec[2];
-  // look = normalize(look);
   glutPostRedisplay();
 }
 
@@ -235,6 +239,7 @@ void key_poressed(unsigned char key, int x, int y) {
  * callback function for key press (special keys)
  */
 void special_key_pressed(int key, int x, int y) {
+  float rate_translation = 0.1;
   // find the up vector's perpendicular vector
   // we can find the perpendicular vector by cross product of up vector and look
   // vector
@@ -248,57 +253,57 @@ void special_key_pressed(int key, int x, int y) {
   switch (key) {
   case GLUT_KEY_LEFT:
     // move the camera in the direction of up_perp vector
-    camera[0] += up_perp[0] * 0.1;
-    camera[1] += up_perp[1] * 0.1;
-    camera[2] += up_perp[2] * 0.1;
-    look[0] += up_perp[0] * 0.1;
-    look[1] += up_perp[1] * 0.1;
-    look[2] += up_perp[2] * 0.1;
+    camera[0] += up_perp[0] * rate_translation;
+    camera[1] += up_perp[1] * rate_translation;
+    camera[2] += up_perp[2] * rate_translation;
+    look[0] += up_perp[0] * rate_translation;
+    look[1] += up_perp[1] * rate_translation;
+    look[2] += up_perp[2] * rate_translation;
     break;
   case GLUT_KEY_RIGHT:
     // move the camera to the opposite direction of up_perp vector
-    camera[0] -= up_perp[0] * 0.1;
-    camera[1] -= up_perp[1] * 0.1;
-    camera[2] -= up_perp[2] * 0.1;
-    look[0] -= up_perp[0] * 0.1;
-    look[1] -= up_perp[1] * 0.1;
-    look[2] -= up_perp[2] * 0.1;
+    camera[0] -= up_perp[0] * rate_translation;
+    camera[1] -= up_perp[1] * rate_translation;
+    camera[2] -= up_perp[2] * rate_translation;
+    look[0] -= up_perp[0] * rate_translation;
+    look[1] -= up_perp[1] * rate_translation;
+    look[2] -= up_perp[2] * rate_translation;
     break;
   case GLUT_KEY_UP:
     // move the camera in the direction of look vector
-    camera[0] += look_vec[0] * 0.1;
-    camera[1] += look_vec[1] * 0.1;
-    camera[2] += look_vec[2] * 0.1;
-    look[0] += look_vec[0] * 0.1;
-    look[1] += look_vec[1] * 0.1;
-    look[2] += look_vec[2] * 0.1;
+    camera[0] += look_vec[0] * rate_translation;
+    camera[1] += look_vec[1] * rate_translation;
+    camera[2] += look_vec[2] * rate_translation;
+    look[0] += look_vec[0] * rate_translation;
+    look[1] += look_vec[1] * rate_translation;
+    look[2] += look_vec[2] * rate_translation;
     break;
   case GLUT_KEY_DOWN:
     // move the camera in the opposite direction of look vector
-    camera[0] -= look_vec[0] * 0.1;
-    camera[1] -= look_vec[1] * 0.1;
-    camera[2] -= look_vec[2] * 0.1;
-    look[0] -= look_vec[0] * 0.1;
-    look[1] -= look_vec[1] * 0.1;
-    look[2] -= look_vec[2] * 0.1;
+    camera[0] -= look_vec[0] * rate_translation;
+    camera[1] -= look_vec[1] * rate_translation;
+    camera[2] -= look_vec[2] * rate_translation;
+    look[0] -= look_vec[0] * rate_translation;
+    look[1] -= look_vec[1] * rate_translation;
+    look[2] -= look_vec[2] * rate_translation;
     break;
   case GLUT_KEY_PAGE_UP:
     // move the camera in the up vectors direction
-    camera[0] += up[0] * 0.1;
-    camera[1] += up[1] * 0.1;
-    camera[2] += up[2] * 0.1;
-    look[0] += up[0] * 0.1;
-    look[1] += up[1] * 0.1;
-    look[2] += up[2] * 0.1;
+    camera[0] += up[0] * rate_translation;
+    camera[1] += up[1] * rate_translation;
+    camera[2] += up[2] * rate_translation;
+    look[0] += up[0] * rate_translation;
+    look[1] += up[1] * rate_translation;
+    look[2] += up[2] * rate_translation;
     break;
   case GLUT_KEY_PAGE_DOWN:
     // move the camera in the opposite direction of up vector
-    camera[0] -= up[0] * 0.1;
-    camera[1] -= up[1] * 0.1;
-    camera[2] -= up[2] * 0.1;
-    look[0] -= up[0] * 0.1;
-    look[1] -= up[1] * 0.1;
-    look[2] -= up[2] * 0.1;
+    camera[0] -= up[0] * rate_translation;
+    camera[1] -= up[1] * rate_translation;
+    camera[2] -= up[2] * rate_translation;
+    look[0] -= up[0] * rate_translation;
+    look[1] -= up[1] * rate_translation;
+    look[2] -= up[2] * rate_translation;
     break;
   default:
     break;
@@ -313,9 +318,9 @@ int main(int argc, char **argv) {
   look[0] = 0;
   look[1] = 0;
   look[2] = 0;
-  camera[0] = 1;
-  camera[1] = 1;
-  camera[2] = 1;
+  camera[0] = 4;
+  camera[1] = 4;
+  camera[2] = 4;
   up[0] = 0;
   up[1] = 1;
   up[2] = 0;
