@@ -26,6 +26,8 @@ float *look = new float[3];
 // up vector
 float *up = new float[3];
 
+bool draw_axis_flag = true;
+
 void draw_axis() {
   // draw x, y, z axis
   glBegin(GL_LINES);
@@ -66,7 +68,8 @@ void display() {
   gluLookAt(camera[0], camera[1], camera[2], look[0], look[1], look[2], up[0],
             up[1], up[2]);
 
-  draw_axis();
+  if (draw_axis_flag)
+    draw_axis();
   glPushMatrix();
   // glTranslatef(-2.0f, 0.0f, -2.0f); // Move the origin to back
   octahedron.draw_octahedron();
@@ -203,6 +206,10 @@ void key_poressed(unsigned char key, int x, int y) {
   case 'B':
     // change the sphere visibility
     octahedron.toggle_sphere_visibility();
+    break;
+  case 'l':
+    // toggle the draw axis flag
+    draw_axis_flag = !draw_axis_flag;
     break;
   case 'w':
     // move the camera in the direction of up vector
