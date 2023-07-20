@@ -30,17 +30,39 @@ bool draw_axis_flag = true;
 
 void draw_axis() {
   // draw x, y, z axis
+  // save state
+  glPushMatrix();
+  // scale
+  glScalef(2.0f, 2.0f, 2.0f);
+  // white color
+  glColor3f(1.0f, 1.0f, 1.0f);
   glBegin(GL_LINES);
+  glVertex3f(-1.0f, 0.0f, 0.0f);
+  glVertex3f(1.0f, 0.0f, 0.0f);
+  glVertex3f(0.0f, -1.0f, 0.0f);
+  glVertex3f(0.0f, 1.0f, 0.0f);
+  glVertex3f(0.0f, 0.0f, -1.0f);
+  glVertex3f(0.0f, 0.0f, 1.0f);
+  glEnd();
+  glPopMatrix();
+
+  // draw unit vector
+  // save state
+  glPushMatrix();
+  // scale by 0.5
+  glBegin(GL_LINES);
+  // red color
   glColor3f(1.0f, 0.0f, 0.0f);
   glVertex3f(0.0f, 0.0f, 0.0f);
   glVertex3f(1.0f, 0.0f, 0.0f);
+  // green color
   glColor3f(0.0f, 1.0f, 0.0f);
   glVertex3f(0.0f, 0.0f, 0.0f);
   glVertex3f(0.0f, 1.0f, 0.0f);
+  // blue color
   glColor3f(0.0f, 0.0f, 1.0f);
   glVertex3f(0.0f, 0.0f, 0.0f);
   glVertex3f(0.0f, 0.0f, 1.0f);
-  glEnd();
 }
 
 /* Initialize OpenGL Graphics */
