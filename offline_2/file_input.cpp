@@ -11,6 +11,7 @@
 #include <stack>
 
 #include "matrix.cpp"
+#include "vector3d.cpp"
 
 using namespace std;
 
@@ -184,8 +185,69 @@ int main() {
 
   // stage 1 file to write the output to
   ofstream stage1_file("stage1.txt");
+  stage1_file.setf(ios::fixed);
   // stage 2 file to write the output to
   ofstream stage2_file("stage2.txt");
+  stage2_file.setf(ios::fixed);
+  // stage 3 file to write the output to
+  ofstream stage3_file("stage3.txt");
+  stage3_file.setf(ios::fixed);
+
+  // generate the view transformation
+
+  // determine the mutually perpendicular vectors
+  // l = look - eye
+  Vector3D l(look[0] - eye[0], look[1] - eye[1], look[2] - eye[2]);
+  l.normalize();
+  Vector3D up_vector(up[0], up[1], up[2]);
+  up_vector.normalize();
+  Vector3D r = l * up_vector;
+  r.normalize();
+  Vector3D u = r * l;
+
+  // transform the view matrix to eye space
+  Matrix view_matrix;
+  view_matrix.setMatrixValue(0, 0, r[0]);
+  view_matrix.setMatrixValue(0, 1, r[1]);
+  view_matrix.setMatrixValue(0, 2, r[2]);
+
+  view_matrix.setMatrixValue(1, 0, u[0]);
+  view_matrix.setMatrixValue(1, 1, u[1]);
+  view_matrix.setMatrixValue(1, 2, u[2]);
+
+  view_matrix.setMatrixValue(2, 0, -l[0]);
+  view_matrix.setMatrixValue(2, 1, -l[1]);
+  view_matrix.setMatrixValue(2, 2, -l[2]);
+
+  // translate the view matrix
+  Matrix translate_matrix;
+  translate_matrix.setMatrixValue(0, 3, -eye[0]);
+  translate_matrix.setMatrixValue(1, 3, -eye[1]);
+  translate_matrix.setMatrixValue(2, 3, -eye[2]);
+
+  // multiply the matrices
+  view_matrix = view_matrix.multiply(translate_matrix);
+
+  // prespective projection
+
+  // fovx = fovY * aspectRatio
+  double fovY = perspective[0];
+  double aspectRatio = perspective[1];
+  double fovX = fovY * aspectRatio;
+  double near = perspective[2];
+  double far = perspective[3];
+  // t = near * tan(fovY / 2)
+  double t = near * tan(fovY * M_PI / 360);
+  // r = near * tan(fovX / 2)
+  double r_p = near * tan(fovX * M_PI / 360);
+
+  // initialize the projection matrix
+  Matrix projection_matrix;
+  projection_matrix.setMatrixValue(0, 0, near / r_p);
+  projection_matrix.setMatrixValue(1, 1, near / t);
+  projection_matrix.setMatrixValue(2, 2, -(far + near) / (far - near));
+  projection_matrix.setMatrixValue(2, 3, -(2 * far * near) / (far - near));
+  projection_matrix.setMatrixValue(3, 2, -1);
 
   // init i_cap, j_cap, k_cap
   vector<double> i_cap(3);
@@ -244,14 +306,35 @@ int main() {
       }
 
       // print the vertices to the stage1.txt file
-      // stage1_file << "triangle" << endl;
       for (int i = 0; i < 3; i++) {
-        // print 6 decimal places
-        stage1_file.setf(ios::fixed);
         stage1_file << vertex[i][0] << " " << vertex[i][1] << " "
                     << vertex[i][2] << " " << endl;
       }
       stage1_file << endl;
+
+      // transform the vertices using the view matrix
+      for (int i = 0; i < 3; i++) {
+        vertex[i] = transformPoint(view_matrix, vertex[i]);
+      }
+
+      // print the vertices to the stage2.txt file
+      for (int i = 0; i < 3; i++) {
+        stage2_file << vertex[i][0] << " " << vertex[i][1] << " "
+                    << vertex[i][2] << " " << endl;
+      }
+      stage2_file << endl;
+
+      // transform the vertices using the projection matrix
+      for (int i = 0; i < 3; i++) {
+        vertex[i] = transformPoint(projection_matrix, vertex[i]);
+      }
+
+      // print the vertices to the stage3.txt file
+      for (int i = 0; i < 3; i++) {
+        stage3_file << vertex[i][0] << " " << vertex[i][1] << " "
+                    << vertex[i][2] << " " << endl;
+      }
+      stage3_file << endl;
 
       // print current matrix
       matrix.printMatrix();
