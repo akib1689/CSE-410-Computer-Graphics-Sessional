@@ -248,6 +248,7 @@ int main() {
   projection_matrix.setMatrixValue(2, 2, -(far + near) / (far - near));
   projection_matrix.setMatrixValue(2, 3, -(2 * far * near) / (far - near));
   projection_matrix.setMatrixValue(3, 2, -1);
+  projection_matrix.setMatrixValue(3, 3, 0);
 
   // init i_cap, j_cap, k_cap
   vector<double> i_cap(3);

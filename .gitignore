@@ -1,3 +1,6 @@
 # all executable files
 *.out
 .vscode
+
+# generated files of the program
+*stage*.txt
