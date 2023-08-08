@@ -4,3 +4,6 @@
 
 # generated files of the program
 *stage*.txt
+
+# output files
+*.o
