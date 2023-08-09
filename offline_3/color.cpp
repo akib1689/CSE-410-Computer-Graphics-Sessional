@@ -14,7 +14,7 @@ using namespace std;
  * @brief The Color class
  */
 class Color {
-  vector<double> v;
+  vector<int> v;
 
 public:
   /**
@@ -39,7 +39,7 @@ public:
    * @param index
    * @return
    */
-  double &operator[](int index) { return v[index]; }
+  int &operator[](int index) { return v[index]; }
 };
 
 #endif // COLOR_H

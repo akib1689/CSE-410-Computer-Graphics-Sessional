@@ -7,3 +7,5 @@
 
 # output files
 *.o
+*out.bmp
+*z_buffer*
