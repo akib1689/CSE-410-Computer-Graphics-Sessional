@@ -39,9 +39,6 @@ public:
     vertex[0] = v1;
     vertex[1] = v2;
     vertex[2] = v3;
-
-    // assign random color
-    color = Color(rand() % 256, rand() % 256, rand() % 256);
   }
 
   Vector3D &operator[](int index) { return vertex[index]; }
@@ -55,6 +52,11 @@ public:
     cout << vertex[1][0] << " " << vertex[1][1] << " " << vertex[1][2] << endl;
     cout << vertex[2][0] << " " << vertex[2][1] << " " << vertex[2][2] << endl;
   }
+
+  /**
+   * @brief set_color
+   */
+  void set_color(Color c) { color = c; }
 
   /**
    * @brief get_color

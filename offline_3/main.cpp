@@ -18,6 +18,11 @@
 #include "triangle.cpp"
 
 using namespace std;
+static unsigned long int g_seed = 1;
+inline int c_random() {
+  g_seed = (214013 * g_seed + 2531011);
+  return (g_seed >> 16) & 0x7FFF;
+}
 
 // enum for the different types of commands
 enum Command { TRIANGLE, TRANSLATE, SCALE, ROTATE, PUSH, POP, END, NONE };
@@ -625,6 +630,10 @@ int main() {
     stage3 >> x >> y >> z;
     Vector3D v3(x, y, z);
     Triangle t(v1, v2, v3);
+    int red = c_random();
+    int green = c_random();
+    int blue = c_random();
+    t.set_color(Color(red, green, blue));
     triangles.push_back(t);
   }
 
