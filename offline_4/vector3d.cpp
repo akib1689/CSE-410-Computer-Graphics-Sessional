@@ -16,7 +16,7 @@ using namespace std;
 class Vector3D {
   vector<double> v;
 
-public:
+ public:
   Vector3D() : v(3) {}
   Vector3D(double x, double y, double z) : v(3) {
     v[0] = x;
@@ -26,9 +26,9 @@ public:
 
   /**
    * @brief overloaded function for []
-   * 
-   * @param index 
-   * @return double& 
+   *
+   * @param index
+   * @return double&
    */
 
   double &operator[](int index) { return v[index]; }
@@ -115,6 +115,17 @@ public:
   }
 
   /**
+   * @brief operator =
+   * @param another_vector    the vector to be assigned
+   */
+  Vector3D operator=(Vector3D another_vector) {
+    v[0] = another_vector[0];
+    v[1] = another_vector[1];
+    v[2] = another_vector[2];
+    return *this;
+  }
+
+  /**
    * @brief operator ==
    * @param another_vector    the vector to be compared with
    */
@@ -140,17 +151,14 @@ public:
 
   /**
    * @brief get the vector double
-   * 
+   *
    */
-  vector<double> getCoordinates(){
-    return this->v;
-  }
+  vector<double> getCoordinates() { return this->v; }
 
   /**
    * @brief equal operator override
-   * 
+   *
    */
-  
 };
 
-#endif // VECTOR3D_H
+#endif  // VECTOR3D_H
