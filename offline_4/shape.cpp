@@ -15,7 +15,7 @@
 
 class Shape {
  protected:
-  Vecton3D position;                   // center of the shape
+  Vector3D position;                   // center of the shape
   Color color;                         // color of the shape
   vector<double> ambient_coefficient;  // ka(for red, green, blue)
   vector<double> diffuse_coefficient;  // kd(for red, green, blue)
@@ -60,7 +60,7 @@ class Shape {
   virtual Vector3D getNormal(Vector3D &intersection_point) = 0;
   virtual double getIntersection(line &ray) = 0;
   virtual Color getColorAt(Vector3D &intersection_point) = 0;
-  virtual draw() = 0;
+  virtual void draw() = 0;
 };
 
 #endif  // SHAPE_H

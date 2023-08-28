@@ -7,63 +7,81 @@
 
 #include <cmath>
 
-#include "octahedron.cpp"
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include "vector3d.cpp"
+#include "color.cpp"
 
 using namespace std;
 
-octahedron octahedron;
-
-// Global variables
-
-// function
-float Q_rsqrt(float);
-float *normalize(float[3]);
-
-// camera position
-float *camera = new float[3];
-// looking position
-float *look = new float[3];
-// up vector
-float *up = new float[3];
-
 bool draw_axis_flag = true;
 
-void draw_axis() {
-  // draw x, y, z axis
-  // save state
-  glPushMatrix();
-  // scale
-  glScalef(2.0f, 2.0f, 2.0f);
-  // white color
-  glColor3f(1.0f, 1.0f, 1.0f);
-  glBegin(GL_LINES);
-  glVertex3f(-1.0f, 0.0f, 0.0f);
-  glVertex3f(1.0f, 0.0f, 0.0f);
-  glVertex3f(0.0f, -1.0f, 0.0f);
-  glVertex3f(0.0f, 1.0f, 0.0f);
-  glVertex3f(0.0f, 0.0f, -1.0f);
-  glVertex3f(0.0f, 0.0f, 1.0f);
-  glEnd();
-  glPopMatrix();
+float *normalize(float vector[3]) {
+  // sanity check for magnitude 0
+  if (vector[0] == 0 && vector[1] == 0 && vector[2] == 0) {
+    return vector;
+  }
 
-  // draw unit vector
-  // save state
-  glPushMatrix();
-  // scale by 0.5
-  glBegin(GL_LINES);
-  // red color
-  glColor3f(1.0f, 0.0f, 0.0f);
-  glVertex3f(0.0f, 0.0f, 0.0f);
-  glVertex3f(1.0f, 0.0f, 0.0f);
-  // green color
-  glColor3f(0.0f, 1.0f, 0.0f);
-  glVertex3f(0.0f, 0.0f, 0.0f);
-  glVertex3f(0.0f, 1.0f, 0.0f);
-  // blue color
-  glColor3f(0.0f, 0.0f, 1.0f);
-  glVertex3f(0.0f, 0.0f, 0.0f);
-  glVertex3f(0.0f, 0.0f, 1.0f);
+  // magnitude
+  float magnitude =
+      vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2];
+  magnitude = sqrt(magnitude);
+
+  vector[0] *= magnitude;
+  vector[1] *= magnitude;
+  vector[2] *= magnitude;
+
+  return vector;
 }
+
+// global variable
+// camera
+Vector3D camera;
+// look vector
+Vector3D look;
+// up vector
+Vector3D up;
+// right vector
+Vector3D r;
+
+void draw_axis() {
+    // define 3 axis 
+    Vector3D X(1, 0, 0);
+    Vector3D Y(0, 1, 0);
+    Vector3D Z(0, 0, 1);
+    Vector3D origin(0, 0, 0);
+
+    // 3 colors for 3 axis
+    Color red(255, 0, 0);
+    Color green(0, 255, 0);
+    Color blue(0, 0, 255);
+
+    // draw axis
+    if (draw_axis_flag) {
+        glBegin(GL_LINES);
+        // x axis
+        glColor3f(1.0 * red[0]/255, 1.0 * red[1]/255, 1.0 * red[2]/255);
+        glVertex3d(origin[0], origin[1], origin[2]);
+        glVertex3d(X[0],X[1],X[2]);
+
+        glColor3f(1.0 * green[0]/255, 1.0 * green[1]/255, 1.0 * green[2]/255);
+        glVertex3d(origin[0], origin[1], origin[2]);
+        glVertex3d(Y[0],Y[1],Y[2]);
+
+        glColor3f(1.0 * blue[0]/255, 1.0 * blue[1]/255, 1.0 * blue[2]/255);
+        glVertex3d(origin[0], origin[1], origin[2]);
+        glVertex3d(Z[0],Z[1],Z[2]);
+
+        glEnd();     
+        
+    }
+    
+
+
+}
+
 
 /* Initialize OpenGL Graphics */
 void initGL() {
@@ -77,6 +95,7 @@ void initGL() {
          GL_NICEST); // Nice perspective corrections
 }
 
+
 /* Handler for window-repaint event. Call back when the window first appears and
    whenever the window needs to be re-painted. */
 void display() {
@@ -87,17 +106,25 @@ void display() {
 
   glLoadIdentity(); // Reset the model-view matrix
 
+
   gluLookAt(camera[0], camera[1], camera[2], look[0], look[1], look[2], up[0],
             up[1], up[2]);
 
-  if (draw_axis_flag)
-    draw_axis();
+  // draw a triangle to test
+  glColor3f(1,1,0);
+  glBegin(GL_TRIANGLES);
+  glVertex3d(1,0,0);
+  glVertex3d(0,1,0);
+  glVertex3d(0,0,1);
+  glEnd();
+
+
+  draw_axis();
   glPushMatrix();
-  // glTranslatef(-2.0f, 0.0f, -2.0f); // Move the origin to back
-  octahedron.draw_octahedron();
   glPopMatrix();
   glutSwapBuffers(); // Swap the front and back frame buffers (double buffering)
 }
+
 
 /* Handler for window re-size event. Called back when the window first appears
    and whenever the window is re-sized with its new width and height */
@@ -118,49 +145,26 @@ void reshape(GLsizei width,
   gluPerspective(45.0f, aspect, 0.1f, 100.0f);
 }
 
+
 /**
  * callback function for key press (normal keys)
  */
-void key_poressed(unsigned char key, int x, int y) {
+void key_pressed(unsigned char key, int x, int y) {
   // rate of rotation
   float rate_rotation = PI_DEGREE / 12;
   float rate_translation = 0.1;
   // calculate the look vector
-  float *look_vec = new float[3];
-  look_vec[0] = look[0] - camera[0];
-  look_vec[1] = look[1] - camera[1];
-  look_vec[2] = look[2] - camera[2];
+  Vector3D look_vec(look - camera);
 
   // normalize the up vector and look vector
-  up = normalize(up);
+  up.normalize();
   // look_vec = normalize(look_vec);
 
-  // now find the cross product of up and look
-  float *cross = new float[3];
-  cross[0] = up[1] * look_vec[2] - up[2] * look_vec[1];
-  cross[1] = up[2] * look_vec[0] - up[0] * look_vec[2];
-  cross[2] = up[0] * look_vec[1] - up[1] * look_vec[0];
+  // now find the cross product of look_vec and up
+  Vector3D cross = look_vec * up;
 
   // the vectors up look and cross are perpendicular to each other
   switch (key) {
-  case 'a':
-    octahedron.rotateY(-rate_rotation);
-    break;
-  case 'd':
-    octahedron.rotateY(rate_rotation);
-    break;
-  case 'A':
-    octahedron.rotateY(-rate_rotation);
-    break;
-  case 'D':
-    octahedron.rotateY(rate_rotation);
-    break;
-  case ',':
-    octahedron.transform_to_sphere();
-    break;
-  case '.':
-    octahedron.transform_to_octahedron();
-    break;
   case '1':
     // rotate the look vector to cross vector
     look_vec[0] = cross[0] * sin(M_PI / 180) + look_vec[0] * cos(M_PI / 180);
@@ -179,9 +183,7 @@ void key_poressed(unsigned char key, int x, int y) {
     look_vec[1] = up[1] * sin(M_PI / 180) + look_vec[1] * cos(M_PI / 180);
     look_vec[2] = up[2] * sin(M_PI / 180) + look_vec[2] * cos(M_PI / 180);
     // change the up vector to perpendicular to look vector and cross vector
-    up[0] = look_vec[1] * cross[2] - look_vec[2] * cross[1];
-    up[1] = look_vec[2] * cross[0] - look_vec[0] * cross[2];
-    up[2] = look_vec[0] * cross[1] - look_vec[1] * cross[0];
+    up = (cross * look_vec);
     break;
   case '4':
     // rotate the look vector away from up vector
@@ -204,30 +206,6 @@ void key_poressed(unsigned char key, int x, int y) {
     up[0] = cross[0] * sin(-M_PI / 180) + up[0] * cos(-M_PI / 180);
     up[1] = cross[1] * sin(-M_PI / 180) + up[1] * cos(-M_PI / 180);
     up[2] = cross[2] * sin(-M_PI / 180) + up[2] * cos(-M_PI / 180);
-    break;
-  case 'v':
-    // change the triangle visibility
-    octahedron.toggle_triangle_visibility();
-    break;
-  case 'V':
-    // change the vertex visibility
-    octahedron.toggle_triangle_visibility();
-    break;
-  case 'c':
-    // change the cylinder visibility
-    octahedron.toggle_cylinder_visibility();
-    break;
-  case 'C':
-    // change the cylinder visibility
-    octahedron.toggle_cylinder_visibility();
-    break;
-  case 'b':
-    // change the sphere visibility
-    octahedron.toggle_sphere_visibility();
-    break;
-  case 'B':
-    // change the sphere visibility
-    octahedron.toggle_sphere_visibility();
     break;
   case 'l':
     // toggle the draw axis flag
@@ -263,6 +241,11 @@ void key_poressed(unsigned char key, int x, int y) {
   look[2] = camera[2] + look_vec[2];
   glutPostRedisplay();
 }
+
+
+
+
+
 
 /**
  * callback function for key press (special keys)
@@ -340,6 +323,7 @@ void special_key_pressed(int key, int x, int y) {
   glutPostRedisplay();
 }
 
+
 /* Main function: GLUT runs as a console application starting at main()  */
 int main(int argc, char **argv) {
   look[0] = 0;
@@ -355,50 +339,14 @@ int main(int argc, char **argv) {
   glutInitWindowSize(640, 640);   // Set the window's initial width & height
   glutInitWindowPosition(50, 50); // initial window position
   glutCreateWindow(
-      "Offline 1: magic cube"); // Create a window with the given title
+      "Offline 4: Ray Tracing"); // Create a window with the given title
   glutDisplayFunc(
       display); // Register display callback handler for window re-paint
   glutReshapeFunc(
       reshape); // Register reshape callback handler for window re-size
-  glutKeyboardFunc(key_poressed);       // register keyboard press callback
+  glutKeyboardFunc(key_pressed);       // register keyboard press callback
   glutSpecialFunc(special_key_pressed); // register special key press callback
   initGL();                             // Our own OpenGL initialization
   glutMainLoop(); // Enter the infinitely event-processing loop
   return 0;
-}
-
-float Q_rsqrt(float number) {
-  long i;
-  float x2, y;
-  const float threehalfs = 1.5F;
-
-  x2 = number * 0.5F;
-  y = number;
-  i = *(long *)&y;           // evil floating point bit level hacking
-  i = 0x5f3759df - (i >> 1); // this comment was intentionally
-                             // deleted for vulgarity
-  y = *(float *)&i;
-  y = y * (threehalfs - (x2 * y * y)); // 1st iteration
-  // y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be
-  // removed
-
-  return y;
-}
-
-float *normalize(float vector[3]) {
-  // sanity check for magnitude 0
-  if (vector[0] == 0 && vector[1] == 0 && vector[2] == 0) {
-    return vector;
-  }
-
-  // magnitude
-  float magnitude =
-      vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2];
-  magnitude = Q_rsqrt(magnitude);
-
-  vector[0] *= magnitude;
-  vector[1] *= magnitude;
-  vector[2] *= magnitude;
-
-  return vector;
 }

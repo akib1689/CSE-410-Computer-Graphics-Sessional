@@ -24,6 +24,13 @@ public:
     v[2] = z;
   }
 
+  /**
+   * @brief overloaded function for []
+   * 
+   * @param index 
+   * @return double& 
+   */
+
   double &operator[](int index) { return v[index]; }
 
   /**
@@ -130,6 +137,20 @@ public:
    * @brief print
    */
   void print() { cout << v[0] << " " << v[1] << " " << v[2] << endl; }
+
+  /**
+   * @brief get the vector double
+   * 
+   */
+  vector<double> getCoordinates(){
+    return this->v;
+  }
+
+  /**
+   * @brief equal operator override
+   * 
+   */
+  
 };
 
 #endif // VECTOR3D_H
