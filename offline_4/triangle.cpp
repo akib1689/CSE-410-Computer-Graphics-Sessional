@@ -1,6 +1,6 @@
 /**
  * This class is used to represent a triangle in 3D space.
- * this triangle extends the base Shape class.
+ * This triangle extends the base Shape class.
  */
 
 #ifndef TRIANGLE_H
@@ -11,28 +11,28 @@
 #include "shape.cpp"
 #include "vector3d.cpp"
 
-class triangles : public Shape {
+class Triangle : public Shape {
  private:
   // the three vertices of the triangle
   Vector3D v1, v2, v3;
 
  public:
   /**
-   * @brief Construct a new triangles object
+   * @brief Construct a new Triangle object
    *
    * @param v1 the first vertex
    * @param v2 the second vertex
    * @param v3 the third vertex
    */
-  triangles(Vector3D v1, Vector3D v2, Vector3D v3) : v1(v1), v2(v2), v3(v3) {}
+  Triangle(Vector3D v1, Vector3D v2, Vector3D v3) : v1(v1), v2(v2), v3(v3) {}
   /**
    * @brief empty constructor
    */
-  triangles() : v1(), v2(), v3() {}
+  Triangle() : v1(), v2(), v3() {}
   /**
-   * @brief Construct a new triangles object
+   * @brief Construct a new Triangle object
    */
-  triangles(const triangles &t) : v1(t.v1), v2(t.v2), v3(t.v3) {}
+  Triangle(const Triangle &t) : v1(t.v1), v2(t.v2), v3(t.v3) {}
 
   /**
    * @brief returns the area of the triangle
@@ -46,7 +46,7 @@ class triangles : public Shape {
   }
 
   /**
-   * @overriden
+   * @overridden
    * @brief draw the triangle
    */
   void draw() {
@@ -59,7 +59,7 @@ class triangles : public Shape {
     glEnd();
   }
   /**
-   * @overriden
+   * @overridden
    * @brief returns the normal vector of the triangle
    * @param intersection_point the point of intersection
    * @param line the incident line
@@ -77,11 +77,55 @@ class triangles : public Shape {
 
     return Line(intersection_point, normal);
   }
+  /**
+   * @overridden
+   * @brief returns the point of intersection of the triangle and the line
+   * @param ray the incident line
+   */
+  double getIntersection(Line &ray) {
+    Vector3D v12 = v2 - v1;
+    Vector3D v13 = v3 - v1;
+    Vector3D normal = v12 * v13;
+    normal.normalize();
+
+    // check if the line is parallel to the triangle
+    if (normal.dot_product(ray.getDirection()) == 0) {
+      return -1;
+    }
+
+    // check if the line is intersecting the triangle
+    Vector3D v1p = ray.getStart() - v1;
+    double t = v1p.dot_product(normal) / ray.getDirection().dot_product(normal);
+    if (t < 0) {
+      return -1;
+    }
+
+    // check if the intersection point is inside the triangle
+    Vector3D intersection_point = ray.getPoint(t);
+    Vector3D v12p = intersection_point - v1;
+    Vector3D v23 = v3 - v2;
+    Vector3D v23p = intersection_point - v2;
+    Vector3D v31 = v1 - v3;
+    Vector3D v31p = intersection_point - v3;
+    if (normal.dot_product(v12 * v12p) < 0 ||
+        normal.dot_product(v23 * v23p) < 0 ||
+        normal.dot_product(v31 * v31p) < 0) {
+      return -1;
+    }
+
+    return t;
+  }
+  /**
+   * @overridden
+   * @brief returns the color of the triangle at the point of intersection
+   * @param intersection_point the point of intersection
+   */
+  Color getColorAt(Vector3D &intersection_point) { return color; }
 
   /**
    * destructor
    */
-  ~triangles() {}
+  ~Triangle() {}
 };
 
 #endif  // TRIANGLE_H

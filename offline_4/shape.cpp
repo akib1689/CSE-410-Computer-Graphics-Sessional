@@ -9,45 +9,48 @@
 #include "line.cpp"
 #include "vector3d.cpp"
 
-/**
- * @brief The Shape class
- */
-
 class Shape {
  protected:
-  Vector3D position;                   // center of the shape
-  Color color;                         // color of the shape
-  vector<double> ambient_coefficient;  // ka(for red, green, blue)
-  vector<double> diffuse_coefficient;  // kd(for red, green, blue)
-  double specular_coefficient;         // ks
-  double reflection_coefficient;       // for metallic reflection
+  Vector3D position;              // center of the shape
+  Color color;                    // color of the shape
+  double ambient_coefficient;     // ka
+  double diffuse_coefficient;     // kd
+  double specular_coefficient;    // ks
+  double reflection_coefficient;  // for metallic reflection
 
  public:
-  Shape() : ambient_coefficient(3), diffuse_coefficient(3) {}
-  Shape(Vector3D position, Color color, vector<double> ambient_coefficient,
-        vector<double> diffuse_coefficient, double specular_coefficient,
-        double reflection_coefficient) {
-    this->position = position;
-    this->color = color;
-    this->ambient_coefficient = ambient_coefficient;
-    this->diffuse_coefficient = diffuse_coefficient;
-    this->specular_coefficient = specular_coefficient;
-    this->reflection_coefficient = reflection_coefficient;
-  }
+  Shape()
+      : ambient_coefficient(0.0),
+        diffuse_coefficient(0.0),
+        specular_coefficient(0.0),
+        reflection_coefficient(0.0) {}
+
+  Shape(Vector3D position,
+        Color color,
+        double ambient_coefficient,
+        double diffuse_coefficient,
+        double specular_coefficient,
+        double reflection_coefficient)
+      : position(position),
+        color(color),
+        ambient_coefficient(ambient_coefficient),
+        diffuse_coefficient(diffuse_coefficient),
+        specular_coefficient(specular_coefficient),
+        reflection_coefficient(reflection_coefficient) {}
 
   Vector3D getPosition() { return position; }
   Color getColor() { return color; }
-  vector<double> getAmbientCoefficient() { return ambient_coefficient; }
-  vector<double> getDiffuseCoefficient() { return diffuse_coefficient; }
+  double getAmbientCoefficient() { return ambient_coefficient; }
+  double getDiffuseCoefficient() { return diffuse_coefficient; }
   double getSpecularCoefficient() { return specular_coefficient; }
   double getReflectionCoefficient() { return reflection_coefficient; }
 
   void setPosition(Vector3D position) { this->position = position; }
   void setColor(Color color) { this->color = color; }
-  void setAmbientCoefficient(vector<double> ambient_coefficient) {
+  void setAmbientCoefficient(double ambient_coefficient) {
     this->ambient_coefficient = ambient_coefficient;
   }
-  void setDiffuseCoefficient(vector<double> diffuse_coefficient) {
+  void setDiffuseCoefficient(double diffuse_coefficient) {
     this->diffuse_coefficient = diffuse_coefficient;
   }
   void setSpecularCoefficient(double specular_coefficient) {
@@ -57,9 +60,9 @@ class Shape {
     this->reflection_coefficient = reflection_coefficient;
   }
 
-  virtual Line getNormal(Vector3D &intersection_point, Line line) = 0;
-  virtual double getIntersection(Line &ray) = 0;
-  virtual Color getColorAt(Vector3D &intersection_point) = 0;
+  virtual Line getNormal(Vector3D& intersection_point, Line line) = 0;
+  virtual double getIntersection(Line& ray) = 0;
+  virtual Color getColorAt(Vector3D& intersection_point) = 0;
   virtual void draw() = 0;
 };
 

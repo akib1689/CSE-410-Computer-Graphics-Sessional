@@ -1,10 +1,14 @@
 #define _USE_MATH_DEFINES
 #define PI_DEGREE 180.0
 
+// iostream and fstream for reading and writing files
+#include <fstream>
+#include <iostream>
+
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
 
+// math library
 #include <cmath>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -24,9 +28,24 @@ Vector3D camera;
 Vector3D look;
 // up vector
 Vector3D up;
-// right vector
-Vector3D r;
 
+// test
+Triangle t;
+
+// parameters
+double near_plane, far_plane, fov_y, aspect_ratio;
+// level of recursion
+int level_of_recursion;
+// number of pixels
+int number_of_pixels_y;
+
+double width_of_cell;
+double ambient_coefficient, diffuse_coefficient, reflection_coefficient;
+
+/**
+ * @brief draw_axis
+ * draws the axis
+ */
 void draw_axis() {
   // define 3 axis
   Vector3D X(1, 0, 0);
@@ -59,6 +78,41 @@ void draw_axis() {
   }
 }
 
+/**
+ * @brief Loads the data from the file
+ * @param filename the name of the file
+ */
+void load_parameters(string filename) {
+  ifstream file(filename.c_str());
+  string line;
+
+  // read near plane, far plane, fov_y, aspect_ratio from 1st line
+  getline(file, line);
+  stringstream ss(line);
+  ss >> near_plane >> far_plane >> fov_y >> aspect_ratio;
+  // read level of recursion from 2nd line
+  getline(file, line);
+  stringstream ss2(line);
+  ss2 >> level_of_recursion;
+  // read number of pixels from 3rd line
+  getline(file, line);
+  stringstream ss3(line);
+  ss3 >> number_of_pixels_y;
+  // width of each cell of checker board
+  getline(file, line);
+  stringstream ss4(line);
+  ss4 >> width_of_cell;
+  // ambient , diffuse and reflection coefficients for checker board
+  getline(file, line);
+  stringstream ss5(line);
+  ss5 >> ambient_coefficient >> diffuse_coefficient >> reflection_coefficient;
+
+  // triangle
+  t = Triangle(Vector3D(1, 0, 0), Vector3D(0, 1, 0), Vector3D(0, 0, 1));
+
+  file.close();
+}
+
 /* Initialize OpenGL Graphics */
 void initGL() {
   glClearColor(0.0f, 0.0f, 0.0f,
@@ -76,20 +130,20 @@ void initGL() {
 void display() {
   glClear(GL_COLOR_BUFFER_BIT |
           GL_DEPTH_BUFFER_BIT);  // Clear color and depth buffers
-  glMatrixMode(GL_MODELVIEW);    // To operate on model-view matrix
 
-  glLoadIdentity();  // Reset the model-view matrix
+  glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
+  glLoadIdentity();             // Reset the projection matrix
+  gluPerspective(fov_y, aspect_ratio, near_plane,
+                 far_plane);  // Apply perspective projection matrix
 
+  glMatrixMode(GL_MODELVIEW);  // To operate on model-view matrix
+  glLoadIdentity();            // Reset the model-view matrix
   gluLookAt(camera[0], camera[1], camera[2], look[0], look[1], look[2], up[0],
             up[1], up[2]);
 
   // draw a triangle to test
   glColor3f(1, 1, 0);
-  glBegin(GL_TRIANGLES);
-  glVertex3d(1, 0, 0);
-  glVertex3d(0, 1, 0);
-  glVertex3d(0, 0, 1);
-  glEnd();
+  t.draw();
 
   draw_axis();
   glPushMatrix();
@@ -103,7 +157,8 @@ void display() {
 void reshape(GLsizei width,
              GLsizei height) {  // GLsizei for non-negative integer
   // Compute aspect ratio of the new window
-  if (height == 0) height = 1;  // To prevent divide by 0
+  if (height == 0)
+    height = 1;  // To prevent divide by 0
   GLfloat aspect = (GLfloat)width / (GLfloat)height;
 
   // Set the viewport to cover the new window
@@ -289,18 +344,24 @@ void special_key_pressed(int key, int x, int y) {
 }
 
 /* Main function: GLUT runs as a console application starting at main()  */
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
+  // load the parameters
+  load_parameters("scene.txt");
+  // initialize the camera
   look[0] = 0;
   look[1] = 0;
   look[2] = 0;
-  camera[0] = 4;
-  camera[1] = 4;
-  camera[2] = 4;
+  camera[0] = -10;
+  camera[1] = 0;
+  camera[2] = 0;
   up[0] = 0;
   up[1] = 1;
   up[2] = 0;
-  glutInit(&argc, argv);           // Initialize GLUT
-  glutInitWindowSize(640, 640);    // Set the window's initial width & height
+  glutInit(&argc, argv);  // Initialize GLUT
+  int window_width = number_of_pixels_y * aspect_ratio;
+  glutInitWindowSize(
+      window_width,
+      number_of_pixels_y);         // Set the window's initial width & height
   glutInitWindowPosition(50, 50);  // initial window position
   glutCreateWindow(
       "Offline 4: Ray Tracing");  // Create a window with the given title

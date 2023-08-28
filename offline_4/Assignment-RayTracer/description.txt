@@ -60,7 +60,7 @@ input explanation:
 50			width of each chell of the checkerboard
 0.1 0.1 0.8		ambient, diffuse, reflection coefficient of the infinite checkerboard (no specular for it)
 
-3 			number of objects
+4 			number of objects
 
 sphere
 20.0 20.0 20.0 		center

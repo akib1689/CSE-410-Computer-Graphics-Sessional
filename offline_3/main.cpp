@@ -33,9 +33,9 @@ enum Command { TRIANGLE, TRANSLATE, SCALE, ROTATE, PUSH, POP, END, NONE };
  * @param axis the axis to rotate the point around
  * @param angle the angle to rotate the point by
  */
-vector<double> rodriguesRotation(vector<double> &point, vector<double> &axis,
+vector<double> rodriguesRotation(vector<double>& point,
+                                 vector<double>& axis,
                                  double angle) {
-
   // convert the angle to radians
   angle = angle * M_PI / 180;
   // cos and sin of the angle
@@ -69,7 +69,7 @@ vector<double> rodriguesRotation(vector<double> &point, vector<double> &axis,
  * @param line the line to be parsed
  * @return vector of doubles
  */
-vector<double> splitLine(const string &line) {
+vector<double> splitLine(const string& line) {
   vector<double> values;
   istringstream iss(line);
   string token;
@@ -89,7 +89,7 @@ vector<double> splitLine(const string &line) {
  * @return the transformed point
  */
 
-vector<double> transformPoint(Matrix &matrix, vector<double> &point) {
+vector<double> transformPoint(Matrix& matrix, vector<double>& point) {
   // first check if the coordinates are in homogenous form
   // if not then transform it to homogenous form
   vector<double> homogenous_point;
@@ -127,7 +127,7 @@ vector<double> transformPoint(Matrix &matrix, vector<double> &point) {
 /**
  * from a string returns the enum of that string
  */
-Command getCommand(const string &command) {
+Command getCommand(const string& command) {
   // cout << command << endl;
   if (command.compare("triangle") == 0) {
     return TRIANGLE;
@@ -166,7 +166,7 @@ Command getCommand(const string &command) {
  * @param top   the top scanline of the canvas
  * @return      the top scanline
  */
-double find_top(Triangle &t, double top_scanline) {
+double find_top(Triangle& t, double top_scanline) {
   double top = t[2][1];
   // for (int i = 1; i < 3; i++) {
   //   if (t[i][1] > top) {
@@ -185,7 +185,7 @@ double find_top(Triangle &t, double top_scanline) {
  * @param bottom    the bottom scanline of the canvas
  * @return          the bottom scanline
  */
-double find_bottom(Triangle &t, double bottom_scanline) {
+double find_bottom(Triangle& t, double bottom_scanline) {
   double bottom = t[0][1];
   // for (int i = 1; i < 3; i++) {
   //   if (t[i][1] < bottom) {
@@ -207,7 +207,7 @@ double find_bottom(Triangle &t, double bottom_scanline) {
  *              a point outside of the view frustum (if the line is parallel to
  * the plane)
  */
-Vector3D find_intersection(Vector3D &p1, Vector3D &p2, double y) {
+Vector3D find_intersection(Vector3D& p1, Vector3D& p2, double y) {
   double x1 = p1[0];
   double y1 = p1[1];
   double z1 = p1[2];
@@ -235,11 +235,12 @@ Vector3D find_intersection(Vector3D &p1, Vector3D &p2, double y) {
  * @param dx            the pixel mapping value
  * @return              the left intersection column
  */
-int find_left_intersection_column(Vector3D &intersection, double left_x,
+int find_left_intersection_column(Vector3D& intersection,
+                                  double left_x,
                                   double dx) {
   double x = intersection[0];
   if (x < left_x) {
-    x = left_x; // clipping
+    x = left_x;  // clipping
   }
   return (x - left_x) / dx;
 }
@@ -252,11 +253,12 @@ int find_left_intersection_column(Vector3D &intersection, double left_x,
  * @param dx            the pixel mapping value
  * @return              the right intersection column
  */
-int find_right_intersection_column(Vector3D &intersection, double left_x,
+int find_right_intersection_column(Vector3D& intersection,
+                                   double left_x,
                                    double dx) {
   double x = intersection[0];
   if (x > left_x + 2) {
-    x = left_x + 2; // clipping
+    x = left_x + 2;  // clipping
   }
   return (x - left_x) / dx;
 }
@@ -269,8 +271,10 @@ int find_right_intersection_column(Vector3D &intersection, double left_x,
  * @param dx                  the pixel mapping value
  * @return                    nothing the points are passed by reference
  */
-void do_clipping(Vector3D &left_intersection, Vector3D &right_intersection,
-                 double left_x, double dx) {
+void do_clipping(Vector3D& left_intersection,
+                 Vector3D& right_intersection,
+                 double left_x,
+                 double dx) {
   if (left_intersection[0] < left_x) {
     left_intersection[0] = left_x;
   }
@@ -286,8 +290,8 @@ void do_clipping(Vector3D &left_intersection, Vector3D &right_intersection,
  * @param right_intersection  the right intersection point
  * @return                    nothing the points are passed by reference
  */
-void assign_left_right(Vector3D &left_intersection,
-                       Vector3D &right_intersection) {
+void assign_left_right(Vector3D& left_intersection,
+                       Vector3D& right_intersection) {
   if (left_intersection[0] > right_intersection[0]) {
     Vector3D temp = left_intersection;
     left_intersection = right_intersection;
@@ -450,156 +454,156 @@ int main() {
     double magnitude;
 
     switch (getCommand(line)) {
-    case TRIANGLE:
-      cout << "triangle" << endl;
-      // take another line
-      getline(scene_file, line);
-      // parse the line for the three vertices
-      vertex[0] = splitLine(line);
-      getline(scene_file, line);
-      vertex[1] = splitLine(line);
-      getline(scene_file, line);
-      vertex[2] = splitLine(line);
+      case TRIANGLE:
+        cout << "triangle" << endl;
+        // take another line
+        getline(scene_file, line);
+        // parse the line for the three vertices
+        vertex[0] = splitLine(line);
+        getline(scene_file, line);
+        vertex[1] = splitLine(line);
+        getline(scene_file, line);
+        vertex[2] = splitLine(line);
 
-      // transform the vertices
-      for (int i = 0; i < 3; i++) {
-        vertex[i] = transformPoint(matrix, vertex[i]);
-      }
+        // transform the vertices
+        for (int i = 0; i < 3; i++) {
+          vertex[i] = transformPoint(matrix, vertex[i]);
+        }
 
-      // print the vertices to the stage1.txt file
-      for (int i = 0; i < 3; i++) {
-        stage1_file << vertex[i][0] << " " << vertex[i][1] << " "
-                    << vertex[i][2] << " " << endl;
-      }
-      stage1_file << endl;
+        // print the vertices to the stage1.txt file
+        for (int i = 0; i < 3; i++) {
+          stage1_file << vertex[i][0] << " " << vertex[i][1] << " "
+                      << vertex[i][2] << " " << endl;
+        }
+        stage1_file << endl;
 
-      // transform the vertices using the view matrix
-      for (int i = 0; i < 3; i++) {
-        vertex[i] = transformPoint(view_matrix, vertex[i]);
-      }
+        // transform the vertices using the view matrix
+        for (int i = 0; i < 3; i++) {
+          vertex[i] = transformPoint(view_matrix, vertex[i]);
+        }
 
-      // print the vertices to the stage2.txt file
-      for (int i = 0; i < 3; i++) {
-        stage2_file << vertex[i][0] << " " << vertex[i][1] << " "
-                    << vertex[i][2] << " " << endl;
-      }
-      stage2_file << endl;
+        // print the vertices to the stage2.txt file
+        for (int i = 0; i < 3; i++) {
+          stage2_file << vertex[i][0] << " " << vertex[i][1] << " "
+                      << vertex[i][2] << " " << endl;
+        }
+        stage2_file << endl;
 
-      // transform the vertices using the projection matrix
-      for (int i = 0; i < 3; i++) {
-        vertex[i] = transformPoint(projection_matrix, vertex[i]);
-      }
+        // transform the vertices using the projection matrix
+        for (int i = 0; i < 3; i++) {
+          vertex[i] = transformPoint(projection_matrix, vertex[i]);
+        }
 
-      // print the vertices to the stage3.txt file
-      for (int i = 0; i < 3; i++) {
-        stage3_file << vertex[i][0] << " " << vertex[i][1] << " "
-                    << vertex[i][2] << " " << endl;
-      }
-      stage3_file << endl;
+        // print the vertices to the stage3.txt file
+        for (int i = 0; i < 3; i++) {
+          stage3_file << vertex[i][0] << " " << vertex[i][1] << " "
+                      << vertex[i][2] << " " << endl;
+        }
+        stage3_file << endl;
 
-      // print current matrix
-      matrix.printMatrix();
+        // print current matrix
+        matrix.printMatrix();
 
-      break;
-    case TRANSLATE:
-      cout << "translate" << endl;
-      // read the next line
-      getline(scene_file, line);
-      // parse the line for tx, ty, tz
-      factors = splitLine(line);
+        break;
+      case TRANSLATE:
+        cout << "translate" << endl;
+        // read the next line
+        getline(scene_file, line);
+        // parse the line for tx, ty, tz
+        factors = splitLine(line);
 
-      // print the matrix before translation
-      // matrix.printMatrix();
+        // print the matrix before translation
+        // matrix.printMatrix();
 
-      // initialize the translate matrix
-      factor_matrix.setMatrixValue(0, 3, factors[0]);
-      factor_matrix.setMatrixValue(1, 3, factors[1]);
-      factor_matrix.setMatrixValue(2, 3, factors[2]);
+        // initialize the translate matrix
+        factor_matrix.setMatrixValue(0, 3, factors[0]);
+        factor_matrix.setMatrixValue(1, 3, factors[1]);
+        factor_matrix.setMatrixValue(2, 3, factors[2]);
 
-      // factor_matrix.printMatrix();
+        // factor_matrix.printMatrix();
 
-      // multiply the matrices
-      matrix = matrix.multiply(factor_matrix);
+        // multiply the matrices
+        matrix = matrix.multiply(factor_matrix);
 
-      // print the matrix after translation
-      // matrix.printMatrix();
+        // print the matrix after translation
+        // matrix.printMatrix();
 
-      break;
-    case SCALE:
-      cout << "scale" << endl;
-      // read the next line
-      getline(scene_file, line);
-      // parse the line for sx, sy, sz
-      factors = splitLine(line);
+        break;
+      case SCALE:
+        cout << "scale" << endl;
+        // read the next line
+        getline(scene_file, line);
+        // parse the line for sx, sy, sz
+        factors = splitLine(line);
 
-      // initialize the scale matrix
-      factor_matrix.setMatrixValue(0, 0, factors[0]);
-      factor_matrix.setMatrixValue(1, 1, factors[1]);
-      factor_matrix.setMatrixValue(2, 2, factors[2]);
+        // initialize the scale matrix
+        factor_matrix.setMatrixValue(0, 0, factors[0]);
+        factor_matrix.setMatrixValue(1, 1, factors[1]);
+        factor_matrix.setMatrixValue(2, 2, factors[2]);
 
-      // multiply the matrices
-      matrix = matrix.multiply(factor_matrix);
+        // multiply the matrices
+        matrix = matrix.multiply(factor_matrix);
 
-      break;
-    case ROTATE:
-      cout << "rotate" << endl;
+        break;
+      case ROTATE:
+        cout << "rotate" << endl;
 
-      // read the next line'
-      getline(scene_file, line);
-      // parse the line for angle, axis.x, axis.y, axis.z
-      factors = splitLine(line);
+        // read the next line'
+        getline(scene_file, line);
+        // parse the line for angle, axis.x, axis.y, axis.z
+        factors = splitLine(line);
 
-      // seperate the axis
-      for (int i = 0; i < 3; i++) {
-        axis[i] = factors[i + 1];
-      }
+        // seperate the axis
+        for (int i = 0; i < 3; i++) {
+          axis[i] = factors[i + 1];
+        }
 
-      // normalize the axis
-      magnitude =
-          sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
+        // normalize the axis
+        magnitude =
+            sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
 
-      for (int i = 0; i < 3; i++) {
-        axis[i] /= magnitude;
-      }
+        for (int i = 0; i < 3; i++) {
+          axis[i] /= magnitude;
+        }
 
-      // get the rotated points
-      rotated_point[0] = rodriguesRotation(i_cap, axis, factors[0]);
-      rotated_point[1] = rodriguesRotation(j_cap, axis, factors[0]);
-      rotated_point[2] = rodriguesRotation(k_cap, axis, factors[0]);
+        // get the rotated points
+        rotated_point[0] = rodriguesRotation(i_cap, axis, factors[0]);
+        rotated_point[1] = rodriguesRotation(j_cap, axis, factors[0]);
+        rotated_point[2] = rodriguesRotation(k_cap, axis, factors[0]);
 
-      // initialize the rotation matrix
-      factor_matrix.setMatrixValue(0, 0, rotated_point[0][0]);
-      factor_matrix.setMatrixValue(0, 1, rotated_point[1][0]);
-      factor_matrix.setMatrixValue(0, 2, rotated_point[2][0]);
+        // initialize the rotation matrix
+        factor_matrix.setMatrixValue(0, 0, rotated_point[0][0]);
+        factor_matrix.setMatrixValue(0, 1, rotated_point[1][0]);
+        factor_matrix.setMatrixValue(0, 2, rotated_point[2][0]);
 
-      factor_matrix.setMatrixValue(1, 0, rotated_point[0][1]);
-      factor_matrix.setMatrixValue(1, 1, rotated_point[1][1]);
-      factor_matrix.setMatrixValue(1, 2, rotated_point[2][1]);
+        factor_matrix.setMatrixValue(1, 0, rotated_point[0][1]);
+        factor_matrix.setMatrixValue(1, 1, rotated_point[1][1]);
+        factor_matrix.setMatrixValue(1, 2, rotated_point[2][1]);
 
-      factor_matrix.setMatrixValue(2, 0, rotated_point[0][2]);
-      factor_matrix.setMatrixValue(2, 1, rotated_point[1][2]);
-      factor_matrix.setMatrixValue(2, 2, rotated_point[2][2]);
+        factor_matrix.setMatrixValue(2, 0, rotated_point[0][2]);
+        factor_matrix.setMatrixValue(2, 1, rotated_point[1][2]);
+        factor_matrix.setMatrixValue(2, 2, rotated_point[2][2]);
 
-      factor_matrix.printMatrix();
+        factor_matrix.printMatrix();
 
-      // multiply the matrices
-      matrix = matrix.multiply(factor_matrix);
+        // multiply the matrices
+        matrix = matrix.multiply(factor_matrix);
 
-      break;
-    case PUSH:
-      cout << "push" << endl;
-      // push the matrix to the stack
-      matrix_stack.push(matrix);
-      break;
-    case POP:
-      cout << "pop" << endl;
-      // pop the matrix from the stack
-      matrix = matrix_stack.top();
-      matrix_stack.pop();
-      break;
-    case END:
-      cout << "end" << endl;
-      break;
+        break;
+      case PUSH:
+        cout << "push" << endl;
+        // push the matrix to the stack
+        matrix_stack.push(matrix);
+        break;
+      case POP:
+        cout << "pop" << endl;
+        // pop the matrix from the stack
+        matrix = matrix_stack.top();
+        matrix_stack.pop();
+        break;
+      case END:
+        cout << "end" << endl;
+        break;
     }
   }
   // close the scene file
@@ -648,7 +652,7 @@ int main() {
   // ! step 1 finished.
 
   // init the z-buffer
-  double **z_buffer = new double *[height];
+  double** z_buffer = new double*[height];
   for (int i = 0; i < height; i++) {
     z_buffer[i] = new double[width];
     for (int j = 0; j < width; j++) {
@@ -658,7 +662,7 @@ int main() {
   }
 
   // init the frame buffer (holds the color)
-  Color **frame_buffer = new Color *[height];
+  Color** frame_buffer = new Color*[height];
   for (int i = 0; i < height; i++) {
     frame_buffer[i] = new Color[width];
     for (int j = 0; j < width; j++) {
@@ -689,7 +693,6 @@ int main() {
     cout << "Bottom: " << bottom_scanline << endl;
 
     for (double row = top_scanline; row >= bottom_scanline; row -= dy) {
-
       // find the left and right intersection points 2 is the top vertex
       // 0 and 1 are the bottom vertices
       Vector3D left_intersection =
@@ -763,7 +766,6 @@ int main() {
   // set the color of each pixel
   for (int i = 0; i < height; i++) {
     for (int j = 0; j < width; j++) {
-
       image.set_pixel(j, i, frame_buffer[i][j][0], frame_buffer[i][j][1],
                       frame_buffer[i][j][2]);
     }
