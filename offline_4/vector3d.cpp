@@ -37,7 +37,7 @@ class Vector3D {
    * @brief operator *
    * @param another_vector    the vector to be multiplied with (cross product)
    */
-  Vector3D operator*(Vector3D &another_vector) {
+  Vector3D operator*(Vector3D another_vector) {
     Vector3D result;
     result[0] = v[1] * another_vector[2] - v[2] * another_vector[1];
     result[1] = v[2] * another_vector[0] - v[0] * another_vector[2];
@@ -49,7 +49,7 @@ class Vector3D {
    * @brief dot_product
    * @param another_vector    the vector to be multiplied with (dot product)
    */
-  double dot_product(Vector3D &another_vector) {
+  double dot_product(Vector3D another_vector) {
     return v[0] * another_vector[0] + v[1] * another_vector[1] +
            v[2] * another_vector[2];
   }
@@ -59,7 +59,7 @@ class Vector3D {
    * @param another_vector    the vector to be added with
    */
 
-  Vector3D operator+(Vector3D &another_vector) {
+  Vector3D operator+(Vector3D another_vector) {
     Vector3D result;
     result[0] = v[0] + another_vector[0];
     result[1] = v[1] + another_vector[1];
@@ -71,7 +71,7 @@ class Vector3D {
    * @brief operator -
    * @param another_vector    the vector to be subtracted with
    */
-  Vector3D operator-(Vector3D &another_vector) {
+  Vector3D operator-(Vector3D another_vector) {
     Vector3D result;
     result[0] = v[0] - another_vector[0];
     result[1] = v[1] - another_vector[1];
@@ -107,17 +107,6 @@ class Vector3D {
    * @brief operator =
    * @param another_vector    the vector to be assigned
    */
-  Vector3D operator=(Vector3D &another_vector) {
-    v[0] = another_vector[0];
-    v[1] = another_vector[1];
-    v[2] = another_vector[2];
-    return *this;
-  }
-
-  /**
-   * @brief operator =
-   * @param another_vector    the vector to be assigned
-   */
   Vector3D operator=(Vector3D another_vector) {
     v[0] = another_vector[0];
     v[1] = another_vector[1];
@@ -129,7 +118,7 @@ class Vector3D {
    * @brief operator ==
    * @param another_vector    the vector to be compared with
    */
-  bool operator==(Vector3D &another_vector) {
+  bool operator==(Vector3D another_vector) {
     return v[0] == another_vector[0] && v[1] == another_vector[1] &&
            v[2] == another_vector[2];
   }
@@ -138,7 +127,7 @@ class Vector3D {
    * @brief normalize
    */
   void normalize() {
-    double magnitude = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    double magnitude = this->length();
     v[0] /= magnitude;
     v[1] /= magnitude;
     v[2] /= magnitude;
@@ -156,9 +145,10 @@ class Vector3D {
   vector<double> getCoordinates() { return this->v; }
 
   /**
-   * @brief equal operator override
-   *
+   * @brief length of the vector
+   * @return double
    */
+  double length() { return sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]); }
 };
 
 #endif  // VECTOR3D_H

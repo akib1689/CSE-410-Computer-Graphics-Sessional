@@ -57,8 +57,8 @@ class Shape {
     this->reflection_coefficient = reflection_coefficient;
   }
 
-  virtual Vector3D getNormal(Vector3D &intersection_point) = 0;
-  virtual double getIntersection(line &ray) = 0;
+  virtual Line getNormal(Vector3D &intersection_point, Line line) = 0;
+  virtual double getIntersection(Line &ray) = 0;
   virtual Color getColorAt(Vector3D &intersection_point) = 0;
   virtual void draw() = 0;
 };

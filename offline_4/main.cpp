@@ -10,29 +10,12 @@
 #include <vector>
 
 #include "color.cpp"
+#include "triangle.cpp"
 #include "vector3d.cpp"
 
 using namespace std;
 
 bool draw_axis_flag = true;
-
-float *normalize(float vector[3]) {
-  // sanity check for magnitude 0
-  if (vector[0] == 0 && vector[1] == 0 && vector[2] == 0) {
-    return vector;
-  }
-
-  // magnitude
-  float magnitude =
-      vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2];
-  magnitude = sqrt(magnitude);
-
-  vector[0] *= magnitude;
-  vector[1] *= magnitude;
-  vector[2] *= magnitude;
-
-  return vector;
-}
 
 // global variable
 // camera
