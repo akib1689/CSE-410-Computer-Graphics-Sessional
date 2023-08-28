@@ -13,7 +13,10 @@
 #include <string>
 #include <vector>
 
+#include "checker_board.cpp"
 #include "color.cpp"
+#include "line.cpp"
+#include "shape.cpp"
 #include "triangle.cpp"
 #include "vector3d.cpp"
 
@@ -31,6 +34,8 @@ Vector3D up;
 
 // test
 Triangle t;
+
+CheckerBoard floor_checker_board;
 
 // parameters
 double near_plane, far_plane, fov_y, aspect_ratio;
@@ -106,6 +111,9 @@ void load_parameters(string filename) {
   getline(file, line);
   stringstream ss5(line);
   ss5 >> ambient_coefficient >> diffuse_coefficient >> reflection_coefficient;
+  floor_checker_board = CheckerBoard(Vector3D(0, -1, 0), Color(255, 255, 255),
+                                     ambient_coefficient, diffuse_coefficient,
+                                     0, reflection_coefficient, width_of_cell);
 
   // triangle
   t = Triangle(Vector3D(1, 0, 0), Vector3D(0, 1, 0), Vector3D(0, 0, 1));
@@ -143,7 +151,9 @@ void display() {
 
   // draw a triangle to test
   glColor3f(1, 1, 0);
-  t.draw();
+  //   t.draw();
+  // draw the checker board
+  floor_checker_board.draw();
 
   draw_axis();
   glPushMatrix();

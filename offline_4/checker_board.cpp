@@ -8,6 +8,7 @@
 
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
 
+#include "line.cpp"
 #include "shape.cpp"
 #include "vector3d.cpp"
 
@@ -38,19 +39,25 @@ class CheckerBoard : public Shape {
   }
 
   /**
+   * @brief empty constructor
+   */
+  CheckerBoard()
+      : Shape(), normal(Vector3D(0, 1, 0)), width(0), number_of_squares(0) {}
+
+  /**
    * @overridden
    * @brief returns the normal vector of the checker board
    * @param intersection_point the point of intersection
    * @param line the incident line
    */
-  Vector3D getNormal(Vector3D intersection_point, Line line) {
+  Line getNormal(Vector3D& intersection_point, Line line) {
     // check on the direction of the line
     // if the line is going away from the checker board, then the normal vector
     // should be reversed
     if (line.getDirection().dot_product(normal) > 0) {
-      return normal * -1;
+      return Line(intersection_point, normal * -1);
     }
-    return normal;
+    return Line(intersection_point, normal);
   }
 
   /**
@@ -62,7 +69,6 @@ class CheckerBoard : public Shape {
     glBegin(GL_QUADS);
     {
       // set the color of the checker board
-      glColor3f(color.getRed(), color.getGreen(), color.getBlue());
 
       // draw the checker board
       for (int i = -number_of_squares; i < number_of_squares; i++) {
