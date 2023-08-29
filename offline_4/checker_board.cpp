@@ -35,7 +35,7 @@ class CheckerBoard : public Shape {
               1),
         width(width) {
     // set the normal vector of the checker board
-    normal = Vector3D(0, 1, 0);
+    normal = Vector3D(0, 0, 1);
     number_of_squares = 128;
   }
 
@@ -43,7 +43,7 @@ class CheckerBoard : public Shape {
    * @brief empty constructor
    */
   CheckerBoard()
-      : Shape(), normal(Vector3D(0, 1, 0)), width(0), number_of_squares(0) {}
+      : Shape(), normal(Vector3D(0, 0, 1)), width(0), number_of_squares(0) {}
 
   /**
    * @overridden
@@ -75,14 +75,14 @@ class CheckerBoard : public Shape {
         for (int j = -number_of_squares + 1; j < number_of_squares; j++) {
           // find the four corners of the square
           // * position holds the center of the checker board
-          Vector3D bottom_left = position + Vector3D(i * width - width / 2, 0,
-                                                     j * width - width / 2);
-          Vector3D bottom_right = position + Vector3D(i * width + width / 2, 0,
-                                                      j * width - width / 2);
-          Vector3D top_right = position + Vector3D(i * width + width / 2, 0,
-                                                   j * width + width / 2);
-          Vector3D top_left = position + Vector3D(i * width - width / 2, 0,
-                                                  j * width + width / 2);
+          Vector3D bottom_left = position + Vector3D(i * width - width / 2,
+                                                     j * width - width / 2, 0);
+          Vector3D bottom_right = position + Vector3D(i * width + width / 2,
+                                                      j * width - width / 2, 0);
+          Vector3D top_right = position + Vector3D(i * width + width / 2,
+                                                   j * width + width / 2, 0);
+          Vector3D top_left = position + Vector3D(i * width - width / 2,
+                                                  j * width + width / 2, 0);
 
           // debug print
           // cout<< "i: " << i << " j: " << j << endl;

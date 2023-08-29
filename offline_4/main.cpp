@@ -26,8 +26,6 @@ using namespace std;
 
 bool draw_axis_flag = true;
 
-enum ShapeType { SPHERE, PYRAMID, CUBE };
-
 // global variable
 // camera
 Vector3D camera;
@@ -246,7 +244,7 @@ void load_parameters(string filename) {
       int shine;
       ss12 >> shine;
       cout << "creating cube" << endl;
-      // todo: create the cube
+      // create the cube
       Cube* cube = new Cube(position, color, ka, kd, ks, kr, shine, length);
       // add the cube to the shapes vector
       shapes.push_back(cube);
@@ -502,11 +500,11 @@ int main(int argc, char** argv) {
   look[1] = 0;
   look[2] = 0;
   camera[0] = 100;
-  camera[1] = 10;
+  camera[1] = 100;
   camera[2] = 100;
   up[0] = 0;
-  up[1] = 1;
-  up[2] = 0;
+  up[1] = 0;
+  up[2] = 1;
   glutInit(&argc, argv);  // Initialize GLUT
   int window_width = number_of_pixels_y * aspect_ratio;
   glutInitWindowSize(

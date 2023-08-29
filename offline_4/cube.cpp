@@ -17,6 +17,8 @@
 class Cube : public Shape {
  private:
   double sideLength;  // side length of the cube
+  Vector3D vertices[8];
+
  public:
   // Constructor to match the parent class
   Cube(Vector3D position,
@@ -34,7 +36,17 @@ class Cube : public Shape {
               specular_coefficient,
               reflection_coefficient,
               specular_exponent),
-        sideLength(sideLength) {}
+        sideLength(sideLength) {
+    // calculate the vertices
+    vertices[0] = position;
+    vertices[1] = position + Vector3D(0, 0, sideLength);
+    vertices[2] = position + Vector3D(sideLength, 0, sideLength);
+    vertices[3] = position + Vector3D(sideLength, 0, 0);
+    vertices[4] = position + Vector3D(0, sideLength, 0);
+    vertices[5] = position + Vector3D(0, sideLength, sideLength);
+    vertices[6] = position + Vector3D(sideLength, sideLength, sideLength);
+    vertices[7] = position + Vector3D(sideLength, sideLength, 0);
+  }
 
   // Empty constructor
   Cube() : Shape(), sideLength(0) {}
@@ -61,24 +73,8 @@ class Cube : public Shape {
 
   // Method to draw the cube
   void draw() {
-    // Save the current state of OpenGL
-    glPushMatrix();
-    // Translate to the position of the cube
-    glTranslated(position[0], position[1], position[2]);
     // Set the color of the cube
     glColor3f(1.0 * color[0] / 255, 1.0 * color[1] / 255, 1.0 * color[2] / 255);
-
-    // create a vector of vertices
-    Vector3D vertices[8];
-    // v[0] starts at origin
-    vertices[0] = Vector3D(0, 0, 0);
-    vertices[1] = Vector3D(0, 0, sideLength);
-    vertices[2] = Vector3D(sideLength, 0, sideLength);
-    vertices[3] = Vector3D(sideLength, 0, 0);
-    vertices[4] = Vector3D(0, sideLength, 0);
-    vertices[5] = Vector3D(0, sideLength, sideLength);
-    vertices[6] = Vector3D(sideLength, sideLength, sideLength);
-    vertices[7] = Vector3D(sideLength, sideLength, 0);
 
     // create a vector of faces with 2 triangles each
     int faces[12][3] = {{0, 1, 2}, {0, 2, 3}, {0, 4, 5}, {0, 5, 1},
@@ -98,8 +94,6 @@ class Cube : public Shape {
         triangle.draw();
       }
     }
-    // Restore the state of OpenGL
-    glPopMatrix();
   }
 
   // Method to get the color at an intersection point
