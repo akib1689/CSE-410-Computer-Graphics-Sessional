@@ -17,6 +17,7 @@
 #include "color.cpp"
 #include "cube.cpp"
 #include "line.cpp"
+#include "pyramid.cpp"
 #include "shape.cpp"
 #include "sphere.cpp"
 #include "triangle.cpp"
@@ -72,6 +73,7 @@ void draw_axis() {
 
   // draw axis
   if (draw_axis_flag) {
+    glLineWidth(2.5);
     glBegin(GL_LINES);
     // x axis
     glColor3f(1.0 * red[0] / 255, 1.0 * red[1] / 255, 1.0 * red[2] / 255);
@@ -213,6 +215,10 @@ void load_parameters(string filename) {
       ss12 >> shine;
       cout << "creating pyramid" << endl;
       // todo: create the pyramid
+      Pyramid* pyramid =
+          new Pyramid(position, color, ka, kd, ks, kr, shine, width, height);
+      // add the pyramid to the shapes vector
+      shapes.push_back(pyramid);
     } else if (shape_type == "cube") {
       // read the position
       getline(file, line);

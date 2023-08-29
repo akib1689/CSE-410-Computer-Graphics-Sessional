@@ -1,13 +1,13 @@
 /**
  * @file cube.cpp
  * @brief 3D cube class base class: Shape
- * @date 2021-01-08
  */
 
 #ifndef CUBE_H
 #define CUBE_H
 
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
+#include <vector>
 
 #include "line.cpp"
 #include "shape.cpp"
@@ -17,7 +17,7 @@
 class Cube : public Shape {
  private:
   double sideLength;  // side length of the cube
-  Vector3D vertices[8];
+  vector<Triangle*> triangles;
 
  public:
   // Constructor to match the parent class
@@ -38,6 +38,7 @@ class Cube : public Shape {
               specular_exponent),
         sideLength(sideLength) {
     // calculate the vertices
+    Vector3D vertices[8];
     vertices[0] = position;
     vertices[1] = position + Vector3D(0, 0, sideLength);
     vertices[2] = position + Vector3D(sideLength, 0, sideLength);
@@ -46,6 +47,24 @@ class Cube : public Shape {
     vertices[5] = position + Vector3D(0, sideLength, sideLength);
     vertices[6] = position + Vector3D(sideLength, sideLength, sideLength);
     vertices[7] = position + Vector3D(sideLength, sideLength, 0);
+
+    // create a vector of faces with 2 triangles each
+    int faces[12][3] = {{0, 1, 2}, {0, 2, 3}, {0, 4, 5}, {0, 5, 1},
+                        {1, 5, 6}, {1, 6, 2}, {2, 6, 7}, {2, 7, 3},
+                        {3, 7, 4}, {3, 4, 0}, {4, 7, 6}, {4, 6, 5}};
+
+    // create the triangles
+    {
+      for (int i = 0; i < 12; i++) {
+        Vector3D v1 = vertices[faces[i][0]];
+        Vector3D v2 = vertices[faces[i][1]];
+        Vector3D v3 = vertices[faces[i][2]];
+        // create the triangle
+        triangles.push_back(new Triangle(
+            v1, v2, v3, color, ambient_coefficient, diffuse_coefficient,
+            specular_coefficient, reflection_coefficient, specular_exponent));
+      }
+    }
   }
 
   // Empty constructor
@@ -75,24 +94,9 @@ class Cube : public Shape {
   void draw() {
     // Set the color of the cube
     glColor3f(1.0 * color[0] / 255, 1.0 * color[1] / 255, 1.0 * color[2] / 255);
-
-    // create a vector of faces with 2 triangles each
-    int faces[12][3] = {{0, 1, 2}, {0, 2, 3}, {0, 4, 5}, {0, 5, 1},
-                        {1, 5, 6}, {1, 6, 2}, {2, 6, 7}, {2, 7, 3},
-                        {3, 7, 4}, {3, 4, 0}, {4, 7, 6}, {4, 6, 5}};
-    // create the triangles
-    {
-      for (int i = 0; i < 12; i++) {
-        Vector3D v1 = vertices[faces[i][0]];
-        Vector3D v2 = vertices[faces[i][1]];
-        Vector3D v3 = vertices[faces[i][2]];
-        // create the triangle
-        Triangle triangle = Triangle(v1, v2, v3, color, ambient_coefficient,
-                                     diffuse_coefficient, specular_coefficient,
-                                     reflection_coefficient, specular_exponent);
-        // draw the triangle
-        triangle.draw();
-      }
+    // draw the triangles
+    for (int i = 0; i < triangles.size(); i++) {
+      triangles[i]->draw();
     }
   }
 
