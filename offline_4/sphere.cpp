@@ -70,7 +70,7 @@ class Sphere : public Shape {
     // translate to the position of the sphere
     glTranslated(position[0], position[1], position[2]);
     // set the color of the sphere
-    glColor3f(color[0], color[1], color[2]);
+    glColor3f(1.0 * color[0] / 255, 1.0 * color[1] / 255, 1.0 * color[2] / 255);
     // draw the sphere
     glutSolidSphere(radius, 100, 100);
     // restore the state of OpenGL

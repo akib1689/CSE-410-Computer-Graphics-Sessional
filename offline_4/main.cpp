@@ -40,8 +40,6 @@ Triangle t;
 
 CheckerBoard floor_checker_board;
 
-vector<Shape> shapes;
-
 // parameters
 double near_plane, far_plane, fov_y, aspect_ratio;
 // level of recursion
@@ -54,15 +52,18 @@ double ambient_coefficient, diffuse_coefficient, reflection_coefficient;
 
 int number_of_shapes;
 
+// vector of shapes
+vector<Shape*> shapes;
+
 /**
  * @brief draw_axis
  * draws the axis
  */
 void draw_axis() {
   // define 3 axis
-  Vector3D X(1, 0, 0);
-  Vector3D Y(0, 1, 0);
-  Vector3D Z(0, 0, 1);
+  Vector3D X(100, 0, 0);
+  Vector3D Y(0, 100, 0);
+  Vector3D Z(0, 0, 100);
   Vector3D origin(0, 0, 0);
 
   // 3 colors for 3 axis
@@ -115,7 +116,6 @@ void load_parameters(string filename) {
   getline(file, line);
   stringstream ss4(line);
   ss4 >> width_of_cell;
-  cout << width_of_cell << endl;
   // ambient , diffuse and reflection coefficients for checker board
   getline(file, line);
   stringstream ss5(line);
@@ -130,7 +130,7 @@ void load_parameters(string filename) {
   getline(file, line);
   stringstream ss6(line);
   ss6 >> number_of_shapes;
-
+  cout << number_of_shapes << endl;
   // consume the empty line
   getline(file, line);
   // read the shapes
@@ -142,6 +142,8 @@ void load_parameters(string filename) {
     // same for pyramid and sphere
     string shape_type;
     ss7 >> shape_type;
+    cout << "i : " << i << " shape type : " << shape_type << endl;
+
     // switch case for different shapes
     if (shape_type == "sphere") {
       // read the position
@@ -174,9 +176,11 @@ void load_parameters(string filename) {
       int shine;
       ss12 >> shine;
       // create the sphere
-      Sphere sphere(position, color, ka, kd, ks, kr, shine, radius);
+      Sphere* sphere = new Sphere(position, color, ka, kd, ks, kr, shine,
+                                  radius);  // create the sphere
       // add the sphere to the shapes vector
       shapes.push_back(sphere);
+      cout << "sphere added" << endl;
     } else if (shape_type == "pyramid") {
       // read the position
       getline(file, line);
@@ -184,32 +188,64 @@ void load_parameters(string filename) {
       double x, y, z;
       ss8 >> x >> y >> z;
       Vector3D position(x, y, z);
-      // read the color
+      // read width and height of base
       getline(file, line);
       stringstream ss9(line);
-      int r, g, b;
-      ss9 >> r >> g >> b;
-      Color color(r, g, b);
-      // read the ambient coefficient
+      double width, height;
+      ss9 >> width >> height;
+
+      // read the color
       getline(file, line);
       stringstream ss10(line);
-      double ka;
-      ss10 >> ka;
-      // read the diffuse coefficient
+      float r, g, b;
+      ss10 >> r >> g >> b;
+      // convert the color to integer value between 0 and 255 (current range is
+      // 0 and 1)
+      Color color(r * 255, g * 255, b * 255);
+      // read the ambient, diffuse and specular, reflection coefficients
       getline(file, line);
       stringstream ss11(line);
-      double kd;
-      ss11 >> kd;
-      // read the specular coefficient
+      double ka, kd, ks, kr;
+      ss11 >> ka >> kd >> ks >> kr;
+      // read the specular exponent (shine)
       getline(file, line);
       stringstream ss12(line);
-      double ks;
-      ss12 >> ks;
-      // read the reflection coefficient
+      int shine;
+      ss12 >> shine;
+      cout << "creating pyramid" << endl;
+      // todo: create the pyramid
+    } else if (shape_type == "cube") {
+      // read the position
       getline(file, line);
-      stringstream ss13(line);
-      double kr;
-      ss13 >> kr;
+      stringstream ss8(line);
+      double x, y, z;
+      ss8 >> x >> y >> z;
+      Vector3D position(x, y, z);
+      // read the length of each side of the cube
+      getline(file, line);
+      stringstream ss9(line);
+      double length;
+      ss9 >> length;
+      // read the color
+      getline(file, line);
+      stringstream ss10(line);
+      float r, g, b;
+      ss10 >> r >> g >> b;
+      // convert the color to integer value between 0 and 255 (current range is
+      // 0 and 1)
+      Color color(r * 255, g * 255, b * 255);
+      // read the ambient, diffuse and specular, reflection coefficients
+      getline(file, line);
+      stringstream ss11(line);
+      double ka, kd, ks, kr;
+      ss11 >> ka >> kd >> ks >> kr;
+      // read the specular exponent (shine)
+      getline(file, line);
+      stringstream ss12(line);
+      int shine;
+      ss12 >> shine;
+      cout << "creating cube" << endl;
+      // todo: create the cube
     }
   }
 
@@ -253,9 +289,9 @@ void display() {
   // draw the checker board
   floor_checker_board.draw();
   // draw the shapes
-  // for (int i = 0; i < shapes.size(); i++) {
-  //   shapes[i].draw();
-  // }
+  for (int i = 0; i < shapes.size(); i++) {
+    shapes[i]->draw();
+  }
 
   draw_axis();
   glutSwapBuffers();  // Swap the front and back frame buffers (double
@@ -461,9 +497,9 @@ int main(int argc, char** argv) {
   look[0] = 0;
   look[1] = 0;
   look[2] = 0;
-  camera[0] = 4;
-  camera[1] = 4;
-  camera[2] = 4;
+  camera[0] = 100;
+  camera[1] = 10;
+  camera[2] = 100;
   up[0] = 0;
   up[1] = 1;
   up[2] = 0;
