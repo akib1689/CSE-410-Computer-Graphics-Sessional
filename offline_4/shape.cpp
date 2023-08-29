@@ -17,26 +17,30 @@ class Shape {
   double diffuse_coefficient;     // kd
   double specular_coefficient;    // ks
   double reflection_coefficient;  // for metallic reflection
+  int specular_exponent;          // for specular reflection(exponent)
 
  public:
   Shape()
       : ambient_coefficient(0.0),
         diffuse_coefficient(0.0),
         specular_coefficient(0.0),
-        reflection_coefficient(0.0) {}
+        reflection_coefficient(0.0),
+        specular_exponent(1) {}
 
   Shape(Vector3D position,
         Color color,
         double ambient_coefficient,
         double diffuse_coefficient,
         double specular_coefficient,
-        double reflection_coefficient)
+        double reflection_coefficient,
+        int specular_exponent)
       : position(position),
         color(color),
         ambient_coefficient(ambient_coefficient),
         diffuse_coefficient(diffuse_coefficient),
         specular_coefficient(specular_coefficient),
-        reflection_coefficient(reflection_coefficient) {}
+        reflection_coefficient(reflection_coefficient),
+        specular_exponent(specular_exponent) {}
 
   Vector3D getPosition() { return position; }
   Color getColor() { return color; }
@@ -61,7 +65,7 @@ class Shape {
   }
 
   virtual Line getNormal(Vector3D& intersection_point, Line line) = 0;
-  virtual double getIntersection(Line& ray) = 0;
+  virtual double getIntersection(Line& line) = 0;
   virtual Color getColorAt(Vector3D& intersection_point) = 0;
   virtual void draw() = 0;
 };

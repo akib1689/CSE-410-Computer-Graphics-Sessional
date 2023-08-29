@@ -17,12 +17,15 @@
 #include "color.cpp"
 #include "line.cpp"
 #include "shape.cpp"
+#include "sphere.cpp"
 #include "triangle.cpp"
 #include "vector3d.cpp"
 
 using namespace std;
 
 bool draw_axis_flag = true;
+
+enum ShapeType { SPHERE, PYRAMID, CUBE };
 
 // global variable
 // camera
@@ -37,6 +40,8 @@ Triangle t;
 
 CheckerBoard floor_checker_board;
 
+vector<Shape> shapes;
+
 // parameters
 double near_plane, far_plane, fov_y, aspect_ratio;
 // level of recursion
@@ -46,6 +51,8 @@ int number_of_pixels_y;
 
 double width_of_cell;
 double ambient_coefficient, diffuse_coefficient, reflection_coefficient;
+
+int number_of_shapes;
 
 /**
  * @brief draw_axis
@@ -104,19 +111,107 @@ void load_parameters(string filename) {
   stringstream ss3(line);
   ss3 >> number_of_pixels_y;
   // width of each cell of checker board
-  getline(file, line); // consume the empty line
+  getline(file, line);  // consume the empty line
   getline(file, line);
   stringstream ss4(line);
   ss4 >> width_of_cell;
-  cout<< width_of_cell << endl;
+  cout << width_of_cell << endl;
   // ambient , diffuse and reflection coefficients for checker board
   getline(file, line);
   stringstream ss5(line);
   ss5 >> ambient_coefficient >> diffuse_coefficient >> reflection_coefficient;
-  floor_checker_board = CheckerBoard(Vector3D(0, 0, 0), Color(0, 0, 0),
+  floor_checker_board = CheckerBoard(Vector3D(0, 0, 0), Color(255, 255, 255),
                                      ambient_coefficient, diffuse_coefficient,
                                      0, reflection_coefficient, width_of_cell);
-  floor_checker_board.print();
+
+  // consume the empty line
+  getline(file, line);
+  // read the number of shapes
+  getline(file, line);
+  stringstream ss6(line);
+  ss6 >> number_of_shapes;
+
+  // consume the empty line
+  getline(file, line);
+  // read the shapes
+  for (int i = 0; i < number_of_shapes; i++) {
+    // read the shape type
+    getline(file, line);
+    stringstream ss7(line);
+    // cube is written in 'cube' format
+    // same for pyramid and sphere
+    string shape_type;
+    ss7 >> shape_type;
+    // switch case for different shapes
+    if (shape_type == "sphere") {
+      // read the position
+      getline(file, line);
+      stringstream ss8(line);
+      double x, y, z;
+      ss8 >> x >> y >> z;
+      Vector3D position(x, y, z);
+      // read the radius
+      getline(file, line);
+      stringstream ss9(line);
+      double radius;
+      ss9 >> radius;
+      // read the color
+      getline(file, line);
+      stringstream ss10(line);
+      float r, g, b;
+      ss10 >> r >> g >> b;
+      // convert the color to integer value between 0 and 255 (current range is
+      // 0 and 1)
+      Color color(r * 255, g * 255, b * 255);
+      // read the ambient, diffuse and specular, reflection coefficients
+      getline(file, line);
+      stringstream ss11(line);
+      double ka, kd, ks, kr;
+      ss11 >> ka >> kd >> ks >> kr;
+      // read the specular exponent (shine)
+      getline(file, line);
+      stringstream ss12(line);
+      int shine;
+      ss12 >> shine;
+      // create the sphere
+      Sphere sphere(position, color, ka, kd, ks, kr, shine, radius);
+      // add the sphere to the shapes vector
+      shapes.push_back(sphere);
+    } else if (shape_type == "pyramid") {
+      // read the position
+      getline(file, line);
+      stringstream ss8(line);
+      double x, y, z;
+      ss8 >> x >> y >> z;
+      Vector3D position(x, y, z);
+      // read the color
+      getline(file, line);
+      stringstream ss9(line);
+      int r, g, b;
+      ss9 >> r >> g >> b;
+      Color color(r, g, b);
+      // read the ambient coefficient
+      getline(file, line);
+      stringstream ss10(line);
+      double ka;
+      ss10 >> ka;
+      // read the diffuse coefficient
+      getline(file, line);
+      stringstream ss11(line);
+      double kd;
+      ss11 >> kd;
+      // read the specular coefficient
+      getline(file, line);
+      stringstream ss12(line);
+      double ks;
+      ss12 >> ks;
+      // read the reflection coefficient
+      getline(file, line);
+      stringstream ss13(line);
+      double kr;
+      ss13 >> kr;
+    }
+  }
 
   // triangle
   t = Triangle(Vector3D(1, 0, 0), Vector3D(0, 1, 0), Vector3D(0, 0, 1));
@@ -157,6 +252,10 @@ void display() {
   //   t.draw();
   // draw the checker board
   floor_checker_board.draw();
+  // draw the shapes
+  // for (int i = 0; i < shapes.size(); i++) {
+  //   shapes[i].draw();
+  // }
 
   draw_axis();
   glutSwapBuffers();  // Swap the front and back frame buffers (double
@@ -179,7 +278,7 @@ void reshape(GLsizei width,
   glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
   glLoadIdentity();             // Reset
   // Enable perspective projection with fovy, aspect, zNear and zFar
-  gluPerspective(45.0f, aspect, 0.1f, 100.0f);
+  gluPerspective(fov_y, aspect, near_plane, far_plane);
 }
 
 /**
