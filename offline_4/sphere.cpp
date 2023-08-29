@@ -47,7 +47,7 @@ class Sphere : public Shape {
    * @param intersection_point the point of intersection
    * @param line the incident line
    */
-  Line getNormal(Vector3D& intersection_point, Line line) {
+  virtual Line getNormal(Vector3D& intersection_point, Line line) {
     // the normal vector is the vector from the center of the sphere to the
     // point of intersection
     Vector3D normal = intersection_point - position;
@@ -58,13 +58,13 @@ class Sphere : public Shape {
    * @brief returns the intersection point of the line with the sphere
    * @param line the incident line
    */
-  double getIntersection(Line& line) { return 0; }
+  virtual double getIntersection(Line& line) { return 0; }
 
   /**
    * @overridden
    * @brief draw the sphere
    */
-  void draw() {
+  virtual void draw() {
     // save the current state of OpenGL
     glPushMatrix();
     // translate to the position of the sphere
@@ -78,11 +78,11 @@ class Sphere : public Shape {
   }
 
   /**
-   * @overridden
+   * @override
    * @brief returns the color of the sphere at the intersection point
    * @param intersection_point the point of intersection
    */
-  Color getColorAt(Vector3D& intersection_point) {
+  virtual Color getColorAt(Vector3D& intersection_point) {
     // the color of the sphere is the color of the sphere
     return color;
   }

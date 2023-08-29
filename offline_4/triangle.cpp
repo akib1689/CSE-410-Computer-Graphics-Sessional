@@ -18,21 +18,36 @@ class Triangle : public Shape {
 
  public:
   /**
-   * @brief Construct a new Triangle object
-   *
-   * @param v1 the first vertex
-   * @param v2 the second vertex
-   * @param v3 the third vertex
+   * @brief Construct a new Triangle object matching the parent class
    */
-  Triangle(Vector3D v1, Vector3D v2, Vector3D v3) : v1(v1), v2(v2), v3(v3) {}
+  Triangle(Vector3D v1,
+           Vector3D v2,
+           Vector3D v3,
+           Color color,
+           double ambient_coefficient,
+           double diffuse_coefficient,
+           double specular_coefficient,
+           double reflection_coefficient,
+           int specular_exponent)
+      : Shape(v1,
+              color,
+              ambient_coefficient,
+              diffuse_coefficient,
+              specular_coefficient,
+              reflection_coefficient,
+              specular_exponent),
+        v1(v1),
+        v2(v2),
+        v3(v3) {}
+
   /**
    * @brief empty constructor
    */
-  Triangle() : v1(), v2(), v3() {}
-  /**
-   * @brief Construct a new Triangle object
-   */
-  Triangle(const Triangle &t) : v1(t.v1), v2(t.v2), v3(t.v3) {}
+  Triangle()
+      : Shape(),
+        v1(Vector3D(1, 0, 0)),
+        v2(Vector3D(0, 1, 0)),
+        v3(Vector3D(0, 0, 1)) {}
 
   /**
    * @brief returns the area of the triangle
@@ -64,7 +79,7 @@ class Triangle : public Shape {
    * @param intersection_point the point of intersection
    * @param line the incident line
    */
-  Line getNormal(Vector3D &intersection_point, Line line) {
+  Line getNormal(Vector3D& intersection_point, Line line) {
     Vector3D v12 = v2 - v1;
     Vector3D v13 = v3 - v1;
     Vector3D normal = v12 * v13;
@@ -82,7 +97,7 @@ class Triangle : public Shape {
    * @brief returns the point of intersection of the triangle and the line
    * @param ray the incident line
    */
-  double getIntersection(Line &ray) {
+  double getIntersection(Line& ray) {
     Vector3D v12 = v2 - v1;
     Vector3D v13 = v3 - v1;
     Vector3D normal = v12 * v13;
@@ -120,7 +135,7 @@ class Triangle : public Shape {
    * @brief returns the color of the triangle at the point of intersection
    * @param intersection_point the point of intersection
    */
-  Color getColorAt(Vector3D &intersection_point) { return color; }
+  Color getColorAt(Vector3D& intersection_point) { return color; }
 
   /**
    * destructor

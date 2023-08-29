@@ -15,6 +15,7 @@
 
 #include "checker_board.cpp"
 #include "color.cpp"
+#include "cube.cpp"
 #include "line.cpp"
 #include "shape.cpp"
 #include "sphere.cpp"
@@ -246,11 +247,14 @@ void load_parameters(string filename) {
       ss12 >> shine;
       cout << "creating cube" << endl;
       // todo: create the cube
+      Cube* cube = new Cube(position, color, ka, kd, ks, kr, shine, length);
+      // add the cube to the shapes vector
+      shapes.push_back(cube);
     }
-  }
 
-  // triangle
-  t = Triangle(Vector3D(1, 0, 0), Vector3D(0, 1, 0), Vector3D(0, 0, 1));
+    // consume the empty line
+    getline(file, line);
+  }
 
   file.close();
 }
