@@ -35,7 +35,7 @@ class CheckerBoard : public Shape {
         width(width) {
     // set the normal vector of the checker board
     normal = Vector3D(0, 1, 0);
-    number_of_squares = 1000;
+    number_of_squares = 256;
   }
 
   /**
@@ -65,14 +65,12 @@ class CheckerBoard : public Shape {
    * @brief draw the checker board
    */
   void draw() {
-    // draw the checker board
-    glBegin(GL_QUADS);
     {
       // set the color of the checker board
 
       // draw the checker board
-      for (int i = -number_of_squares; i < number_of_squares; i++) {
-        for (int j = -number_of_squares; j < number_of_squares; j++) {
+      for (int i = -number_of_squares + 1; i < number_of_squares; i++) {
+        for (int j = -number_of_squares + 1; j < number_of_squares; j++) {
           // find the four corners of the square
           // * position holds the center of the checker board
           Vector3D bottom_left = position + Vector3D(i * width - width / 2, 0,
@@ -83,26 +81,32 @@ class CheckerBoard : public Shape {
                                                    j * width + width / 2);
           Vector3D top_left = position + Vector3D(i * width - width / 2, 0,
                                                   j * width + width / 2);
+          
+          // debug print
+          // cout<< "i: " << i << " j: " << j << endl;
 
           // draw the square
           glBegin(GL_QUADS);
           {
             // * set the color of the square using i, j
             if ((i + j) % 2 == 0) {
+              // cout<< "black" << endl;
               glColor3f(0.0, 0.0, 0.0);
             } else {
+              // cout<< "white" << endl;
               glColor3f(1.0, 1.0, 1.0);
             }
-            glVertex3f(bottom_left[0], bottom_left[1], bottom_left[2]);
-            glVertex3f(bottom_right[0], bottom_right[1], bottom_right[2]);
-            glVertex3f(top_right[0], top_right[1], top_right[2]);
-            glVertex3f(top_left[0], top_left[1], top_left[2]);
+            glVertex3d(bottom_left[0], bottom_left[1], bottom_left[2]);
+            glVertex3d(bottom_right[0], bottom_right[1], bottom_right[2]);
+            glVertex3d(top_right[0], top_right[1], top_right[2]);
+            glVertex3d(top_left[0], top_left[1], top_left[2]);
           }
           glEnd();
         }
       }
+      // cout<< "done" << endl;
+      // glutPostRedisplay();
     }
-    glEnd();
   }
 
   /**
@@ -147,8 +151,28 @@ class CheckerBoard : public Shape {
     if ((i + j) % 2 == 0) {
       return Color(0.0, 0.0, 0.0);
     } else {
-      return Color(1.0, 1.0, 1.0);
+      return Color(1.0 *  color[0] / 255, 1.0 * color[1] / 255, 1.0 * color[2] / 255);
     }
+  }
+
+  /**
+   * @brief prints the information of the checker board
+   * 
+   */
+  void print() {
+    std::cout << "Checker Board" << std::endl;
+    std::cout << "Position: ";
+    position.print();
+    std::cout << "Normal: ";
+    normal.print();
+    std::cout << "Width: " << width << std::endl;
+    std::cout << "Number of Squares: " << number_of_squares << std::endl;
+    std::cout << "Color: "<< color[0] << " " << color[1] << " " << color[2] << std::endl;
+    std::cout << "Ambient Coefficient: " << ambient_coefficient << std::endl;
+    std::cout << "Diffuse Coefficient: " << diffuse_coefficient << std::endl;
+    std::cout << "Specular Coefficient: " << specular_coefficient << std::endl;
+    std::cout << "Reflection Coefficient: " << reflection_coefficient
+              << std::endl;
   }
 };
 

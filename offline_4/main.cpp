@@ -104,16 +104,19 @@ void load_parameters(string filename) {
   stringstream ss3(line);
   ss3 >> number_of_pixels_y;
   // width of each cell of checker board
+  getline(file, line); // consume the empty line
   getline(file, line);
   stringstream ss4(line);
   ss4 >> width_of_cell;
+  cout<< width_of_cell << endl;
   // ambient , diffuse and reflection coefficients for checker board
   getline(file, line);
   stringstream ss5(line);
   ss5 >> ambient_coefficient >> diffuse_coefficient >> reflection_coefficient;
-  floor_checker_board = CheckerBoard(Vector3D(0, -1, 0), Color(255, 255, 255),
+  floor_checker_board = CheckerBoard(Vector3D(0, 0, 0), Color(0, 0, 0),
                                      ambient_coefficient, diffuse_coefficient,
                                      0, reflection_coefficient, width_of_cell);
+  floor_checker_board.print();
 
   // triangle
   t = Triangle(Vector3D(1, 0, 0), Vector3D(0, 1, 0), Vector3D(0, 0, 1));
@@ -156,8 +159,6 @@ void display() {
   floor_checker_board.draw();
 
   draw_axis();
-  glPushMatrix();
-  glPopMatrix();
   glutSwapBuffers();  // Swap the front and back frame buffers (double
                       // buffering)
 }
@@ -361,9 +362,9 @@ int main(int argc, char** argv) {
   look[0] = 0;
   look[1] = 0;
   look[2] = 0;
-  camera[0] = -10;
-  camera[1] = 0;
-  camera[2] = 0;
+  camera[0] = 4;
+  camera[1] = 4;
+  camera[2] = 4;
   up[0] = 0;
   up[1] = 1;
   up[2] = 0;
