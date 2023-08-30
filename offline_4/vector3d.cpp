@@ -31,7 +31,7 @@ class Vector3D {
    * @return double&
    */
 
-  double &operator[](int index) { return v[index]; }
+  double& operator[](int index) { return v[index]; }
 
   /**
    * @brief operator *
@@ -149,6 +149,16 @@ class Vector3D {
    * @return double
    */
   double length() { return sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]); }
+
+  /**
+   * @brief rotate this vector around another vector by an angle
+   * @param axis              the vector to be rotated around
+   * @param angle             the angle to be rotated by
+   */
+  void rotate(Vector3D axis, double angle) {
+    Vector3D v1 = axis * (*this);
+    *this = *this * cos(angle) + v1 * sin(angle);
+  }
 };
 
 #endif  // VECTOR3D_H

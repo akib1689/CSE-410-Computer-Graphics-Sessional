@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "bitmap_image.hpp"
 #include "checker_board.cpp"
 #include "color.cpp"
 #include "cube.cpp"
@@ -51,9 +52,43 @@ double width_of_cell;
 double ambient_coefficient, diffuse_coefficient, reflection_coefficient;
 
 int number_of_shapes;
+int number_of_normal_light_sources;
 
 // vector of shapes
 vector<Shape*> shapes;
+
+/**
+ * This function captures the image
+ * @param filename the name of the file to be saved
+ */
+void capture_image(string filename, Color** frame_buffer) {
+  // create the image
+  bitmap_image image(number_of_pixels_y * aspect_ratio, number_of_pixels_y);
+  // capture the image
+  for (int i = 0; i < number_of_pixels_y * aspect_ratio; i++) {
+    for (int j = 0; j < number_of_pixels_y; j++) {
+      // set the color of the pixel
+      image.set_pixel(i, j, frame_buffer[i][j][0], frame_buffer[i][j][1],
+                      frame_buffer[i][j][2]);
+    }
+  }
+  // save the image
+  image.save_image(filename.c_str());
+}
+
+/**
+ * This function calculates the color of the pixel and returns it in frame
+ * buffer
+ * @return Color** the frame buffer
+ */
+Color** generate_image() {
+  // create the frame buffer
+  Color** frame_buffer = new Color*[number_of_pixels_y * aspect_ratio];
+  for (int i = 0; i < number_of_pixels_y * aspect_ratio; i++) {
+    frame_buffer[i] = new Color[number_of_pixels_y];
+  }
+  // todo : calculate the color of each pixel
+}
 
 /**
  * @brief draw_axis
@@ -260,6 +295,28 @@ void load_parameters(string filename) {
     getline(file, line);
   }
 
+  // capture information about light sources
+  // read the number of normal light sources
+  getline(file, line);
+  stringstream ss13(line);
+  ss13 >> number_of_normal_light_sources;
+  // consume the empty line
+  getline(file, line);
+  // read the normal light sources
+  for (int i = 0; i < number_of_normal_light_sources; i++) {
+    // read the position
+    getline(file, line);
+    stringstream ss14(line);
+    double x, y, z;
+    ss14 >> x >> y >> z;
+    Vector3D position(x, y, z);
+    // read the fall of parameter
+    getline(file, line);
+    stringstream ss15(line);
+    double fall_of_parameter;
+    ss15 >> fall_of_parameter;
+  }
+  // close the file
   file.close();
 }
 
@@ -340,62 +397,46 @@ void key_pressed(unsigned char key, int x, int y) {
 
   // now find the cross product of look_vec and up
   Vector3D cross = look_vec * up;
+  cross.normalize();
 
   // the vectors up look and cross are perpendicular to each other
   switch (key) {
     case '1':
-      // rotate the look vector to cross vector
-      look_vec[0] =
-          cross[0] * sin(rate_rotation) + look_vec[0] * cos(rate_rotation);
-      look_vec[1] =
-          cross[1] * sin(rate_rotation) + look_vec[1] * cos(rate_rotation);
-      look_vec[2] =
-          cross[2] * sin(rate_rotation) + look_vec[2] * cos(rate_rotation);
+      // rotate the look vector to cross vector here the axis of rotation is up
+      look_vec.rotate(up, rate_rotation);
       break;
     case '2':
-      // rotate the look vector away from cross vector
-      look_vec[0] =
-          cross[0] * sin(-rate_rotation) + look_vec[0] * cos(-rate_rotation);
-      look_vec[1] =
-          cross[1] * sin(-rate_rotation) + look_vec[1] * cos(-rate_rotation);
-      look_vec[2] =
-          cross[2] * sin(-rate_rotation) + look_vec[2] * cos(-rate_rotation);
+      // rotate the look vector away from cross vector here the axys of rotation
+      // is up
+      look_vec.rotate(up, -rate_rotation);
       break;
     case '3':
-      // rotate the look vector to up vector
-      look_vec[0] =
-          up[0] * sin(rate_rotation) + look_vec[0] * cos(rate_rotation);
-      look_vec[1] =
-          up[1] * sin(rate_rotation) + look_vec[1] * cos(rate_rotation);
-      look_vec[2] =
-          up[2] * sin(rate_rotation) + look_vec[2] * cos(rate_rotation);
-      // rotate the up vector away from look vector
-      up = cross * look_vec;
+      // rotate the look vector to up vector here the axis of rotation is cross
+      look_vec.rotate(cross, rate_rotation);
+      // rotate the up vector away from look vector here the axis of rotation is
+      // cross
+      up.rotate(cross, rate_rotation);
       up.normalize();
       break;
     case '4':
-      // rotate the look vector away from up vector
-      look_vec[0] =
-          up[0] * sin(-rate_rotation) + look_vec[0] * cos(-rate_rotation);
-      look_vec[1] =
-          up[1] * sin(-rate_rotation) + look_vec[1] * cos(-rate_rotation);
-      look_vec[2] =
-          up[2] * sin(-rate_rotation) + look_vec[2] * cos(-rate_rotation);
+      // rotate the look vector away from up vector here the axis of rotation is
+      // cross
+      look_vec.rotate(cross, -rate_rotation);
       // rotate the up vector to the look vector
-      up = cross * look_vec;
+      up.rotate(cross, -rate_rotation);
       up.normalize();
       break;
     case '5':
-      // rotate the up vector to the cross vector
-      up[0] = cross[0] * sin(rate_rotation) + up[0] * cos(rate_rotation);
-      up[1] = cross[1] * sin(rate_rotation) + up[1] * cos(rate_rotation);
-      up[2] = cross[2] * sin(rate_rotation) + up[2] * cos(rate_rotation);
+      // rotate the up vector to the cross vector here the axis of rotation is
+      // look
+      up.rotate(look_vec, rate_rotation / 60);
+      up.normalize();
       break;
     case '6':
-      // rotate the up vector away from the cross vector
-      up[0] = cross[0] * sin(-rate_rotation) + up[0] * cos(-rate_rotation);
-      up[1] = cross[1] * sin(-rate_rotation) + up[1] * cos(-rate_rotation);
-      up[2] = cross[2] * sin(-rate_rotation) + up[2] * cos(-rate_rotation);
+      // rotate the up vector away from the cross vector here the axis of
+      // rotation is look
+      up.rotate(look_vec, -rate_rotation / 60);
+      up.normalize();
       break;
     case 'l':
       // toggle the draw axis flag
