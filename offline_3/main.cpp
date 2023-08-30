@@ -217,7 +217,7 @@ Vector3D find_intersection(Vector3D& p1, Vector3D& p2, double y) {
   double z2 = p2[2];
 
   if (y2 == y1) {
-    // todo: Handle the case where y2 is equal to y1
+    // Handle the case where y2 is equal to y1
     return Vector3D(x1, y, z1);
   }
 

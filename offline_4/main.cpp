@@ -17,10 +17,12 @@
 #include "checker_board.cpp"
 #include "color.cpp"
 #include "cube.cpp"
+#include "light.cpp"
 #include "line.cpp"
 #include "pyramid.cpp"
 #include "shape.cpp"
 #include "sphere.cpp"
+#include "spot_light.cpp"
 #include "triangle.cpp"
 #include "vector3d.cpp"
 
@@ -53,10 +55,12 @@ double ambient_coefficient, diffuse_coefficient, reflection_coefficient;
 
 int number_of_shapes;
 int number_of_normal_light_sources;
+int number_of_spot_light_sources;
 
 // vector of shapes
 vector<Shape*> shapes;
-
+vector<Light*> normal_light_sources;
+vector<SpotLight*> spot_light_sources;
 /**
  * This function captures the image
  * @param filename the name of the file to be saved
@@ -83,11 +87,14 @@ void capture_image(string filename, Color** frame_buffer) {
  */
 Color** generate_image() {
   // create the frame buffer
-  Color** frame_buffer = new Color*[number_of_pixels_y * aspect_ratio];
+  Color** frame_buffer = new Color*[((int)(number_of_pixels_y * aspect_ratio))];
   for (int i = 0; i < number_of_pixels_y * aspect_ratio; i++) {
     frame_buffer[i] = new Color[number_of_pixels_y];
   }
   // todo : calculate the color of each pixel
+
+  // return the frame buffer
+  return frame_buffer;
 }
 
 /**
@@ -166,7 +173,7 @@ void load_parameters(string filename) {
   getline(file, line);
   stringstream ss6(line);
   ss6 >> number_of_shapes;
-  cout << number_of_shapes << endl;
+  cout << "number of shapes : " << number_of_shapes << endl;
   // consume the empty line
   getline(file, line);
   // read the shapes
@@ -249,7 +256,7 @@ void load_parameters(string filename) {
       int shine;
       ss12 >> shine;
       cout << "creating pyramid" << endl;
-      // todo: create the pyramid
+      //  create the pyramid
       Pyramid* pyramid =
           new Pyramid(position, color, ka, kd, ks, kr, shine, width, height);
       // add the pyramid to the shapes vector
@@ -300,8 +307,8 @@ void load_parameters(string filename) {
   getline(file, line);
   stringstream ss13(line);
   ss13 >> number_of_normal_light_sources;
-  // consume the empty line
-  getline(file, line);
+  cout << "number of normal light sources : " << number_of_normal_light_sources
+       << endl;
   // read the normal light sources
   for (int i = 0; i < number_of_normal_light_sources; i++) {
     // read the position
@@ -315,7 +322,60 @@ void load_parameters(string filename) {
     stringstream ss15(line);
     double fall_of_parameter;
     ss15 >> fall_of_parameter;
+    // create the light source (color is white)
+    Light* light = new Light(position, Color(255, 255, 255), fall_of_parameter);
+    // add the light source to the vector
+    normal_light_sources.push_back(light);
+    // consume the empty line
+    getline(file, line);
+    cout << "normal light source parameter" << endl;
+    position.print();
+    cout << fall_of_parameter << endl;
   }
+  // read the number of spot light sources
+  getline(file, line);
+  stringstream ss16(line);
+  ss16 >> number_of_spot_light_sources;
+  cout << "number of spot light sources : " << number_of_spot_light_sources
+       << endl;
+  // read the spot light sources
+  for (int i = 0; i < number_of_spot_light_sources; i++) {
+    // read the position
+    getline(file, line);
+    stringstream ss17(line);
+    double x, y, z;
+    ss17 >> x >> y >> z;
+    Vector3D position(x, y, z);
+    // read the fall of parameter
+    getline(file, line);
+    stringstream ss18(line);
+    double fall_of_parameter;
+    ss18 >> fall_of_parameter;
+    // read the point to which the spot light is looking
+    getline(file, line);
+    stringstream ss19(line);
+    double x1, y1, z1, angle;
+    ss19 >> x1 >> y1 >> z1 >> angle;
+    Vector3D pointing(x1, y1, z1);
+    // calculate the direction vector
+    Vector3D direction = pointing - position;
+    // normalize the direction vector
+    direction.normalize();
+
+    // create the spot light source (color is white)
+    SpotLight* spot_light = new SpotLight(position, Color(255, 255, 255),
+                                          fall_of_parameter, direction, angle);
+    // add the spot light source to the vector
+    spot_light_sources.push_back(spot_light);
+    // consume the empty line
+    getline(file, line);
+    cout << "spot light source parameter" << endl;
+    position.print();
+    cout << fall_of_parameter << endl;
+    direction.print();
+    cout << angle << endl;
+  }
+
   // close the file
   file.close();
 }
@@ -356,6 +416,15 @@ void display() {
   // draw the shapes
   for (int i = 0; i < shapes.size(); i++) {
     shapes[i]->draw();
+  }
+  // draw the light sources
+  for (int i = 0; i < normal_light_sources.size(); i++) {
+    normal_light_sources[i]->draw();
+  }
+
+  // draw the spot light sources
+  for (int i = 0; i < spot_light_sources.size(); i++) {
+    spot_light_sources[i]->draw();
   }
 
   draw_axis();
