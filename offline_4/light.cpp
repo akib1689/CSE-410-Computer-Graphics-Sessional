@@ -57,6 +57,20 @@ class Light {
   void setColor(Color color) { this->color = color; }
 
   /**
+   * @brief Get the Falloff object
+   *
+   * @return double
+   */
+  double getFalloff() { return falloff; }
+
+  /**
+   * @brief Set the Falloff object
+   *
+   * @param falloff
+   */
+  void setFalloff(double falloff) { this->falloff = falloff; }
+
+  /**
    * @brief draw the light
    */
   void draw() {

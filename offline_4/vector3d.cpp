@@ -6,6 +6,7 @@
 #ifndef VECTOR3D_H
 #define VECTOR3D_H
 
+#include <cmath>
 #include <vector>
 
 using namespace std;
@@ -158,6 +159,15 @@ class Vector3D {
   void rotate(Vector3D axis, double angle) {
     Vector3D v1 = axis * (*this);
     *this = *this * cos(angle) + v1 * sin(angle);
+  }
+  /**
+   * @brief angle between two vectors
+   * @param another_vector    the vector to be compared with
+   * @return double
+   */
+  double angle(Vector3D another_vector) {
+    return acos(this->dot_product(another_vector) /
+                (this->length() * another_vector.length()));
   }
 };
 

@@ -16,7 +16,7 @@ using namespace std;
 class Color {
   vector<int> v;
 
-public:
+ public:
   /**
    * @brief Color
    */
@@ -39,7 +39,46 @@ public:
    * @param index
    * @return
    */
-  int &operator[](int index) { return v[index]; }
+  int& operator[](int index) { return v[index]; }
+
+  /**
+   * @brief operator *
+   * @param c
+   * @return upodated color
+   */
+  Color operator*(double c) {
+    Color color;
+    for (int i = 0; i < 3; i++) {
+      color[i] = v[i] * c;
+    }
+    return color;
+  }
+
+  /**
+   * @brief operator *
+   * @param another_color
+   * @return updated color
+   */
+  Color operator*(Color another_color) {
+    Color color;
+    for (int i = 0; i < 3; i++) {
+      color[i] = v[i] * another_color[i];
+    }
+    return color;
+  }
+
+  /**
+   * @brief operator +
+   * @param another_color
+   * @return updated color
+   */
+  Color operator+(Color another_color) {
+    Color color;
+    for (int i = 0; i < 3; i++) {
+      color[i] = v[i] + another_color[i];
+    }
+    return color;
+  }
 };
 
-#endif // COLOR_H
+#endif  // COLOR_H
