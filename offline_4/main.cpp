@@ -337,7 +337,6 @@ void key_pressed(unsigned char key, int x, int y) {
 
   // normalize the up vector and look vector
   up.normalize();
-  // look_vec = normalize(look_vec);
 
   // now find the cross product of look_vec and up
   Vector3D cross = look_vec * up;
@@ -370,8 +369,9 @@ void key_pressed(unsigned char key, int x, int y) {
           up[1] * sin(rate_rotation) + look_vec[1] * cos(rate_rotation);
       look_vec[2] =
           up[2] * sin(rate_rotation) + look_vec[2] * cos(rate_rotation);
-      // change the up vector to perpendicular to look vector and cross vector
-      up = (cross * look_vec);
+      // rotate the up vector away from look vector
+      up = cross * look_vec;
+      up.normalize();
       break;
     case '4':
       // rotate the look vector away from up vector
@@ -381,8 +381,9 @@ void key_pressed(unsigned char key, int x, int y) {
           up[1] * sin(-rate_rotation) + look_vec[1] * cos(-rate_rotation);
       look_vec[2] =
           up[2] * sin(-rate_rotation) + look_vec[2] * cos(-rate_rotation);
-      // change the up vector to perpendicular to look vector and cross vector
-      up = (cross * look_vec);
+      // rotate the up vector to the look vector
+      up = cross * look_vec;
+      up.normalize();
       break;
     case '5':
       // rotate the up vector to the cross vector
