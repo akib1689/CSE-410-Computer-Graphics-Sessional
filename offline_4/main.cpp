@@ -79,18 +79,11 @@ void capture_image(string filename, Color** frame_buffer) {
   // save the image
   image.save_image(filename.c_str());
 }
-
 /**
- * This function calculates the color of the pixel and returns it in frame
- * buffer
- * @return Color** the frame buffer
+ * @brief This generates the lines from camera to each pixel
+ * @return vector<Line> the vector of lines
  */
-Color** generate_image() {
-  // create the frame buffer
-  Color** frame_buffer = new Color*[((int)(number_of_pixels_y * aspect_ratio))];
-  for (int i = 0; i < number_of_pixels_y * aspect_ratio; i++) {
-    frame_buffer[i] = new Color[number_of_pixels_y];
-  }
+vector<Line> generate_lines() {
   // calculate the x,y,z point for each pixel
   // then generate the line from camera to that point
   // we have look, camera and up vector
@@ -135,11 +128,32 @@ Color** generate_image() {
       lines.push_back(line);
     }
   }
+  return lines;
+}
 
-  cout << "lines generated" << endl;
-  cout << "number of lines : " << lines.size() << endl;
+/**
+ * This function calculates the color of the pixel and returns it in frame
+ * buffer
+ * @return Color** the frame buffer
+ */
+Color** generate_image() {
+  // create the frame buffer
+  Color** frame_buffer = new Color*[((int)(number_of_pixels_y * aspect_ratio))];
+  for (int i = 0; i < number_of_pixels_y * aspect_ratio; i++) {
+    frame_buffer[i] = new Color[number_of_pixels_y];
+  }
+
+  // generate the lines
+  vector<Line> lines = generate_lines();
+
+  cout << "lines generated.........." << endl;
 
   // todo : calculate the color of each pixel
+  // iterate over the lines
+  for (int i = 0; i < lines.size(); i++) {
+    // get the line
+    Line line = lines[i];
+  }
 
   // return the frame buffer
   return frame_buffer;
