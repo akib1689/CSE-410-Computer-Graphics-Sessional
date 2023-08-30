@@ -91,6 +91,54 @@ Color** generate_image() {
   for (int i = 0; i < number_of_pixels_y * aspect_ratio; i++) {
     frame_buffer[i] = new Color[number_of_pixels_y];
   }
+  // calculate the x,y,z point for each pixel
+  // then generate the line from camera to that point
+  // we have look, camera and up vector
+  // generate looking direction by look - camera
+  // find right vector by cross product of looking direction and up vector
+  // find up vector by cross product of right vector and looking direction
+  // normalize all the vectors
+  Vector3D look_vec(look - camera);
+  // normalize the look vector
+  look_vec.normalize();
+  Vector3D cross = look_vec * up;
+  cross.normalize();
+  Vector3D up_vec = cross * look_vec;
+  up_vec.normalize();
+  vector<Line> lines;
+  // calculate the mid point of the screen (near plane)
+  Vector3D mid_point = camera + look_vec * near_plane;
+
+  // calculate the height and width of the near plane
+  float screen_height = 2 * near_plane * tan(fov_y * M_PI / (2 * PI_DEGREE));
+  float screen_width = screen_height * aspect_ratio;
+
+  // calculate the step size
+  float step_x = screen_width / (number_of_pixels_y * aspect_ratio);
+  float step_y = screen_height / number_of_pixels_y;
+  for (int y = 0; y < number_of_pixels_y; y++) {
+    // calculate the y scale factor the range can be -screen_height/2 to
+    // +screen_height/2
+    float y_scale = -screen_height / 2 + step_y * y + step_y / 2;
+    // iterate over the x axis
+    for (int x = 0; x < number_of_pixels_y * aspect_ratio; x++) {
+      // calculate the x scale factor the range can be -screen_width/2 to
+      // +screen_width/2
+      float x_scale = -screen_width / 2 + step_x * x + step_x / 2;
+
+      // calculate the point on the near plane
+      Vector3D point = mid_point + cross * x_scale + up_vec * y_scale;
+
+      // generate the line from camera to the point
+      Vector3D direction = point - camera;
+      Line line(point, direction);
+      lines.push_back(line);
+    }
+  }
+
+  cout << "lines generated" << endl;
+  cout << "number of lines : " << lines.size() << endl;
+
   // todo : calculate the color of each pixel
 
   // return the frame buffer
@@ -460,6 +508,7 @@ void key_pressed(unsigned char key, int x, int y) {
   float rate_translation = 0.1;
   // calculate the look vector
   Vector3D look_vec(look - camera);
+  Color** frame_buffer;
 
   // normalize the up vector and look vector
   up.normalize();
@@ -528,6 +577,10 @@ void key_pressed(unsigned char key, int x, int y) {
       camera[2] -= up[2] * rate_translation;
       // new look vector
       look_vec = look - camera;
+      break;
+    case '0':
+      // capture the image
+      frame_buffer = generate_image();
       break;
     default:
       break;
