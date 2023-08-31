@@ -96,7 +96,7 @@ class Cube : public Shape {
   // Method to draw the cube
   void draw() {
     // Set the color of the cube
-    glColor3f(1.0 * color[0] / 255, 1.0 * color[1] / 255, 1.0 * color[2] / 255);
+    glColor3f(color[0], color[1], color[2]);
     // draw the triangles
     for (int i = 0; i < triangles.size(); i++) {
       triangles[i]->draw();

@@ -101,7 +101,7 @@ class Pyramid : public Shape {
   // Method to draw the pyramid
   void draw() {
     // Set the color of the pyramid
-    glColor3f(1.0 * color[0] / 255, 1.0 * color[1] / 255, 1.0 * color[2] / 255);
+    glColor3f(color[0], color[1], color[2]);
 
     // TODO: Draw the pyramid using your chosen drawing method
     for (int i = 0; i < triangles.size(); i++) {

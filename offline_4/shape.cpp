@@ -79,7 +79,7 @@ class Shape {
     if (t < 0) {
       return -1;  // no intersection
     }
-    if (recursion_level == 0) {
+    if (current_level == 0) {
       return t;
     }
     // get the intersection point
@@ -185,7 +185,8 @@ class Shape {
       // check if the light source is within the cone of the spot light
       // (the angle between the light direction and the spot light direction is
       // < spot light angle)
-      double angle = spot_lights[i]->getDirection().angle(light_direction);
+      double angle =
+          spot_lights[i]->getDirection().angle(light_direction * (-1));
       // angle is in radian
       if (angle * 180 / M_PI > spot_lights[i]->getAngle()) {
         is_visible = false;
@@ -196,6 +197,7 @@ class Shape {
         // lambertian shading
         double lambart_component = (normal_line.getDirection() * (-1))
                                        .dot_product(light_line.getDirection());
+        lambart_component *= scaling_factor;
         if (lambart_component < 0) {
           lambart_component = 0;
         }
@@ -215,13 +217,13 @@ class Shape {
         }
 
         // update the color value with diffuse and specular light
-        color_value = color_value +
-                      color_at_intersection_point *
-                          (spot_lights[i]->getColor() * diffuse_coefficient *
-                               lambart_component +
-                           spot_lights[i]->getColor() * specular_coefficient *
-                               pow(phong_component, specular_exponent)) *
-                          scaling_factor;
+        color_value =
+            color_value +
+            color_at_intersection_point *
+                (spot_lights[i]->getColor() * diffuse_coefficient *
+                     lambart_component +
+                 spot_lights[i]->getColor() * specular_coefficient *
+                     pow(phong_component, specular_exponent) * scaling_factor);
 
         // update the color to return
         color_to_return = color_to_return + color_value;

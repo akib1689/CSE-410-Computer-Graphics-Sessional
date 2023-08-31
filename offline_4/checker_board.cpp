@@ -95,8 +95,7 @@ class CheckerBoard : public Shape {
               glColor3f(0.0, 0.0, 0.0);
             } else {
               // cout<< "white" << endl;
-              glColor3f(1.0 * color[1] / 255, 1.0 * color[1] / 255,
-                        1.0 * color[2] / 255);
+              glColor3f(color[0], color[1], color[2]);
             }
             glVertex3d(bottom_left[0], bottom_left[1], bottom_left[2]);
             glVertex3d(bottom_right[0], bottom_right[1], bottom_right[2]);

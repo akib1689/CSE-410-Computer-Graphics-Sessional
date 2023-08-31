@@ -71,8 +71,8 @@ void capture_image(string filename, Color** frame_buffer) {
   for (int i = 0; i < number_of_pixels_y * aspect_ratio; i++) {
     for (int j = 0; j < number_of_pixels_y; j++) {
       // set the color of the pixel
-      image.set_pixel(i, j, frame_buffer[i][j][0], frame_buffer[i][j][1],
-                      frame_buffer[i][j][2]);
+      image.set_pixel(i, j, frame_buffer[i][j][0] * 255,
+                      frame_buffer[i][j][1] * 255, frame_buffer[i][j][2] * 255);
     }
   }
   // save the image
@@ -197,7 +197,7 @@ Color** generate_image() {
       // calculate the color
       double t =
           shape->intersect(line, normal_light_sources, spot_light_sources,
-                           shapes, color, 0, level_of_recursion);
+                           shapes, color, 1, level_of_recursion);
       // now we have the color
       // set the color in the frame buffer
       frame_buffer[pixel_line.getX()][pixel_line.getY()] = color;
@@ -220,24 +220,24 @@ void draw_axis() {
   Vector3D origin(0, 0, 0);
 
   // 3 colors for 3 axis
-  Color red(255, 0, 0);
-  Color green(0, 255, 0);
-  Color blue(0, 0, 255);
+  Color red(1, 0, 0);
+  Color green(0, 1, 0);
+  Color blue(0, 0, 1);
 
   // draw axis
   if (draw_axis_flag) {
     glLineWidth(2.5);
     glBegin(GL_LINES);
     // x axis
-    glColor3f(1.0 * red[0] / 255, 1.0 * red[1] / 255, 1.0 * red[2] / 255);
+    glColor3f(red[0], red[1], red[2]);
     glVertex3d(origin[0], origin[1], origin[2]);
     glVertex3d(X[0], X[1], X[2]);
 
-    glColor3f(1.0 * green[0] / 255, 1.0 * green[1] / 255, 1.0 * green[2] / 255);
+    glColor3f(green[0], green[1], green[2]);
     glVertex3d(origin[0], origin[1], origin[2]);
     glVertex3d(Y[0], Y[1], Y[2]);
 
-    glColor3f(1.0 * blue[0] / 255, 1.0 * blue[1] / 255, 1.0 * blue[2] / 255);
+    glColor3f(blue[0], blue[1], blue[2]);
     glVertex3d(origin[0], origin[1], origin[2]);
     glVertex3d(Z[0], Z[1], Z[2]);
 
@@ -275,7 +275,7 @@ void load_parameters(string filename) {
   stringstream ss5(line);
   ss5 >> ambient_coefficient >> diffuse_coefficient >> reflection_coefficient;
   CheckerBoard* floor = new CheckerBoard(
-      Vector3D(0, 0, 0), Color(255, 255, 255), ambient_coefficient,
+      Vector3D(0, 0, 0), Color(1, 1, 1), ambient_coefficient,
       diffuse_coefficient, 0, reflection_coefficient, width_of_cell);
 
   // add the floor checker board to the shapes vector
@@ -321,7 +321,7 @@ void load_parameters(string filename) {
       ss10 >> r >> g >> b;
       // convert the color to integer value between 0 and 255 (current range is
       // 0 and 1)
-      Color color(r * 255, g * 255, b * 255);
+      Color color(r, g, b);
       // read the ambient, diffuse and specular, reflection coefficients
       getline(file, line);
       stringstream ss11(line);
@@ -336,7 +336,7 @@ void load_parameters(string filename) {
       Sphere* sphere = new Sphere(position, color, ka, kd, ks, kr, shine,
                                   radius);  // create the sphere
       // add the sphere to the shapes vector
-      // shapes.push_back(sphere);
+      shapes.push_back(sphere);
       cout << "sphere added" << endl;
     } else if (shape_type == "pyramid") {
       // read the position
@@ -356,9 +356,7 @@ void load_parameters(string filename) {
       stringstream ss10(line);
       float r, g, b;
       ss10 >> r >> g >> b;
-      // convert the color to integer value between 0 and 255 (current range is
-      // 0 and 1)
-      Color color(r * 255, g * 255, b * 255);
+      Color color(r, g, b);
       // read the ambient, diffuse and specular, reflection coefficients
       getline(file, line);
       stringstream ss11(line);
@@ -374,7 +372,7 @@ void load_parameters(string filename) {
       Pyramid* pyramid =
           new Pyramid(position, color, ka, kd, ks, kr, shine, width, height);
       // add the pyramid to the shapes vector
-      // shapes.push_back(pyramid);
+      shapes.push_back(pyramid);
     } else if (shape_type == "cube") {
       // read the position
       getline(file, line);
@@ -394,7 +392,7 @@ void load_parameters(string filename) {
       ss10 >> r >> g >> b;
       // convert the color to integer value between 0 and 255 (current range is
       // 0 and 1)
-      Color color(r * 255, g * 255, b * 255);
+      Color color(r, g, b);
       // read the ambient, diffuse and specular, reflection coefficients
       getline(file, line);
       stringstream ss11(line);
@@ -409,7 +407,7 @@ void load_parameters(string filename) {
       // create the cube
       Cube* cube = new Cube(position, color, ka, kd, ks, kr, shine, length);
       // add the cube to the shapes vector
-      // shapes.push_back(cube);
+      shapes.push_back(cube);
     }
 
     // consume the empty line
@@ -437,7 +435,7 @@ void load_parameters(string filename) {
     double fall_of_parameter;
     ss15 >> fall_of_parameter;
     // create the light source (color is white)
-    Light* light = new Light(position, Color(255, 255, 255), fall_of_parameter);
+    Light* light = new Light(position, Color(1, 1, 1), fall_of_parameter);
     // add the light source to the vector
     normal_light_sources.push_back(light);
     // consume the empty line
@@ -477,7 +475,7 @@ void load_parameters(string filename) {
     direction.normalize();
 
     // create the spot light source (color is white)
-    SpotLight* spot_light = new SpotLight(position, Color(255, 255, 255),
+    SpotLight* spot_light = new SpotLight(position, Color(1, 1, 1),
                                           fall_of_parameter, direction, angle);
     // add the spot light source to the vector
     spot_light_sources.push_back(spot_light);

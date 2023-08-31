@@ -14,7 +14,7 @@ using namespace std;
  * @brief The Color class
  */
 class Color {
-  vector<int> v;
+  vector<double> v;
 
  public:
   /**
@@ -39,7 +39,13 @@ class Color {
    * @param index
    * @return
    */
-  int& operator[](int index) { return v[index]; }
+  double& operator[](int index) {
+    if (index < 0 || index > 2) {
+      cout << "Color: index out of bounds" << endl;
+      exit(1);
+    }
+    return v[index];
+  }
 
   /**
    * @brief operator *

@@ -76,7 +76,7 @@ class Light {
   void draw() {
     glPushMatrix();
     glTranslatef(position[0], position[1], position[2]);
-    glColor3f(1.0 * color[0] / 255, 1.0 * color[1] / 255, 1.0 * color[2] / 255);
+    glColor3f(color[0], color[1], color[2]);
     glutSolidSphere(2, 20, 20);
     glPopMatrix();
   }
