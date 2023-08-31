@@ -7,8 +7,8 @@
 
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
 
-#include "color.cpp"
-#include "vector3d.cpp"
+#include "1805086_color.cpp"
+#include "1805086_vector3d.cpp"
 
 class Light {
  private:

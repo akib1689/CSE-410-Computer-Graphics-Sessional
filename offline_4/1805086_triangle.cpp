@@ -8,8 +8,8 @@
 
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
 
-#include "shape.cpp"
-#include "vector3d.cpp"
+#include "1805086_shape.cpp"
+#include "1805086_vector3d.cpp"
 
 class Triangle : public Shape {
  private:

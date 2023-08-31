@@ -10,10 +10,10 @@
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
 #include <vector>
 
-#include "line.cpp"
-#include "shape.cpp"
-#include "triangle.cpp"
-#include "vector3d.cpp"
+#include "1805086_line.cpp"
+#include "1805086_shape.cpp"
+#include "1805086_triangle.cpp"
+#include "1805086_vector3d.cpp"
 
 class Pyramid : public Shape {
  private:

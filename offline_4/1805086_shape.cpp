@@ -8,11 +8,11 @@
 #include <cmath>
 #include <vector>
 
-#include "color.cpp"
-#include "light.cpp"
-#include "line.cpp"
-#include "spot_light.cpp"
-#include "vector3d.cpp"
+#include "1805086_color.cpp"
+#include "1805086_light.cpp"
+#include "1805086_line.cpp"
+#include "1805086_spot_light.cpp"
+#include "1805086_vector3d.cpp"
 
 class Shape {
  protected:

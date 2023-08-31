@@ -8,10 +8,10 @@
 
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
 
-#include "color.cpp"
-#include "light.cpp"
-#include "line.cpp"
-#include "vector3d.cpp"
+#include "1805086_color.cpp"
+#include "1805086_light.cpp"
+#include "1805086_line.cpp"
+#include "1805086_vector3d.cpp"
 
 class SpotLight : public Light {
  private:

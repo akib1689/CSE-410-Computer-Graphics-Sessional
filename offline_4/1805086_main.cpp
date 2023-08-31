@@ -14,19 +14,19 @@
 #include <string>
 #include <vector>
 
-#include "bitmap_image.hpp"
-#include "checker_board.cpp"
-#include "color.cpp"
-#include "cube.cpp"
-#include "light.cpp"
-#include "line.cpp"
-#include "pixel_line_map.cpp"
-#include "pyramid.cpp"
-#include "shape.cpp"
-#include "sphere.cpp"
-#include "spot_light.cpp"
-#include "triangle.cpp"
-#include "vector3d.cpp"
+#include "1805086_bitmap_image.hpp"
+#include "1805086_checker_board.cpp"
+#include "1805086_color.cpp"
+#include "1805086_cube.cpp"
+#include "1805086_light.cpp"
+#include "1805086_line.cpp"
+#include "1805086_pixel_line_map.cpp"
+#include "1805086_pyramid.cpp"
+#include "1805086_shape.cpp"
+#include "1805086_sphere.cpp"
+#include "1805086_spot_light.cpp"
+#include "1805086_triangle.cpp"
+#include "1805086_vector3d.cpp"
 
 using namespace std;
 

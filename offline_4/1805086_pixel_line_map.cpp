@@ -8,8 +8,8 @@
 #ifndef PIXEL_LINE_MAP_H
 #define PIXEL_LINE_MAP_H
 
-#include "line.cpp"
-#include "vector3d.cpp"
+#include "1805086_line.cpp"
+#include "1805086_vector3d.cpp"
 
 /**
  * @brief The pixel_line_map class
