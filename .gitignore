@@ -9,3 +9,4 @@
 *.o
 *out.bmp
 *z_buffer*
+*.log

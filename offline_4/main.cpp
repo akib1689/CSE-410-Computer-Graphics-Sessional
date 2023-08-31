@@ -19,6 +19,7 @@
 #include "cube.cpp"
 #include "light.cpp"
 #include "line.cpp"
+#include "pixel_line_map.cpp"
 #include "pyramid.cpp"
 #include "shape.cpp"
 #include "sphere.cpp"
@@ -40,8 +41,6 @@ Vector3D up;
 
 // test
 Triangle t;
-
-CheckerBoard floor_checker_board;
 
 // parameters
 double near_plane, far_plane, fov_y, aspect_ratio;
@@ -83,7 +82,7 @@ void capture_image(string filename, Color** frame_buffer) {
  * @brief This generates the lines from camera to each pixel
  * @return vector<Line> the vector of lines
  */
-vector<Line> generate_lines() {
+vector<PixelLineMap> generate_lines() {
   // calculate the x,y,z point for each pixel
   // then generate the line from camera to that point
   // we have look, camera and up vector
@@ -92,19 +91,28 @@ vector<Line> generate_lines() {
   // find up vector by cross product of right vector and looking direction
   // normalize all the vectors
   Vector3D look_vec(look - camera);
-  // normalize the look vector
-  look_vec.normalize();
   Vector3D cross = look_vec * up;
-  cross.normalize();
   Vector3D up_vec = cross * look_vec;
+  look_vec.normalize();
+  cross.normalize();
   up_vec.normalize();
-  vector<Line> lines;
+  cout << "look vec : " << endl;
+  look_vec.print();
+  cout << "cross : " << endl;
+  cross.print();
+  cout << "up vec : " << endl;
+  up_vec.print();
+  vector<PixelLineMap> map;
   // calculate the mid point of the screen (near plane)
   Vector3D mid_point = camera + look_vec * near_plane;
+  cout << "mid point : " << endl;
+  mid_point.print();
 
   // calculate the height and width of the near plane
   float screen_height = 2 * near_plane * tan(fov_y * M_PI / (2 * PI_DEGREE));
+  cout << "screen height : " << screen_height << endl;
   float screen_width = screen_height * aspect_ratio;
+  cout << "screen width : " << screen_width << endl;
 
   // calculate the step size
   float step_x = screen_width / (number_of_pixels_y * aspect_ratio);
@@ -120,15 +128,18 @@ vector<Line> generate_lines() {
       float x_scale = -screen_width / 2 + step_x * x + step_x / 2;
 
       // calculate the point on the near plane
-      Vector3D point = mid_point + cross * x_scale + up_vec * y_scale;
+      Vector3D point = mid_point + cross * x_scale - up_vec * y_scale;
 
       // generate the line from camera to the point
       Vector3D direction = point - camera;
       Line line(point, direction);
-      lines.push_back(line);
+      // create the pixel line map
+      PixelLineMap pixel_line_map(x, y, line);
+      // add the pixel line map to the vector
+      map.push_back(pixel_line_map);
     }
   }
-  return lines;
+  return map;
 }
 
 /**
@@ -144,15 +155,53 @@ Color** generate_image() {
   }
 
   // generate the lines
-  vector<Line> lines = generate_lines();
+  vector<PixelLineMap> pixel_line_map = generate_lines();
 
   cout << "lines generated.........." << endl;
 
-  // todo : calculate the color of each pixel
+  // calculate the color of each pixel
   // iterate over the lines
-  for (int i = 0; i < lines.size(); i++) {
+  for (int i = 0; i < pixel_line_map.size(); i++) {
     // get the line
-    Line line = lines[i];
+    PixelLineMap pixel_line = pixel_line_map[i];
+    Line line = pixel_line.getLine();
+    // cout << "line : " << i << endl;
+    // line.print();
+
+    // find the nearest intersection point
+    double t_min = 1000000000;
+    int nearest_shape_index = -1;
+    for (int j = 0; j < shapes.size(); j++) {
+      // get the shape
+      Shape* shape = shapes[j];
+      // calculate the intersection point
+      Color color(0, 0, 0);
+      double t = shape->getT(line, color, 0);
+      // cout << "x : " << pixel_line.getX() << " y : " << pixel_line.getY()
+      //      << " t : " << t << endl;
+      // check if the intersection point is valid
+      if (t > 0 && (nearest_shape_index == -1 || t < t_min)) {
+        // update the nearest shape index
+        nearest_shape_index = j;
+        // update the t_min
+        t_min = t;
+      }
+    }
+
+    // check if there is an intersection point
+    if (nearest_shape_index != -1) {
+      // get the shape
+      Shape* shape = shapes[nearest_shape_index];
+      // get the color
+      Color color(0, 0, 0);
+      // calculate the color
+      double t =
+          shape->intersect(line, normal_light_sources, spot_light_sources,
+                           shapes, color, 0, level_of_recursion);
+      // now we have the color
+      // set the color in the frame buffer
+      frame_buffer[pixel_line.getX()][pixel_line.getY()] = color;
+    }
   }
 
   // return the frame buffer
@@ -225,9 +274,12 @@ void load_parameters(string filename) {
   getline(file, line);
   stringstream ss5(line);
   ss5 >> ambient_coefficient >> diffuse_coefficient >> reflection_coefficient;
-  floor_checker_board = CheckerBoard(Vector3D(0, 0, 0), Color(255, 255, 255),
-                                     ambient_coefficient, diffuse_coefficient,
-                                     0, reflection_coefficient, width_of_cell);
+  CheckerBoard* floor = new CheckerBoard(
+      Vector3D(0, 0, 0), Color(255, 255, 255), ambient_coefficient,
+      diffuse_coefficient, 0, reflection_coefficient, width_of_cell);
+
+  // add the floor checker board to the shapes vector
+  shapes.push_back(floor);
 
   // consume the empty line
   getline(file, line);
@@ -284,7 +336,7 @@ void load_parameters(string filename) {
       Sphere* sphere = new Sphere(position, color, ka, kd, ks, kr, shine,
                                   radius);  // create the sphere
       // add the sphere to the shapes vector
-      shapes.push_back(sphere);
+      // shapes.push_back(sphere);
       cout << "sphere added" << endl;
     } else if (shape_type == "pyramid") {
       // read the position
@@ -322,7 +374,7 @@ void load_parameters(string filename) {
       Pyramid* pyramid =
           new Pyramid(position, color, ka, kd, ks, kr, shine, width, height);
       // add the pyramid to the shapes vector
-      shapes.push_back(pyramid);
+      // shapes.push_back(pyramid);
     } else if (shape_type == "cube") {
       // read the position
       getline(file, line);
@@ -357,7 +409,7 @@ void load_parameters(string filename) {
       // create the cube
       Cube* cube = new Cube(position, color, ka, kd, ks, kr, shine, length);
       // add the cube to the shapes vector
-      shapes.push_back(cube);
+      // shapes.push_back(cube);
     }
 
     // consume the empty line
@@ -440,6 +492,9 @@ void load_parameters(string filename) {
 
   // close the file
   file.close();
+  cout << "normal light sources : " << normal_light_sources.size() << endl;
+  cout << "spot light sources : " << spot_light_sources.size() << endl;
+  cout << "shapes : " << shapes.size() << endl;
 }
 
 /* Initialize OpenGL Graphics */
@@ -470,11 +525,6 @@ void display() {
   gluLookAt(camera[0], camera[1], camera[2], look[0], look[1], look[2], up[0],
             up[1], up[2]);
 
-  // draw a triangle to test
-  glColor3f(1, 1, 0);
-  //   t.draw();
-  // draw the checker board
-  floor_checker_board.draw();
   // draw the shapes
   for (int i = 0; i < shapes.size(); i++) {
     shapes[i]->draw();
@@ -595,6 +645,10 @@ void key_pressed(unsigned char key, int x, int y) {
     case '0':
       // capture the image
       frame_buffer = generate_image();
+      cout << "frame buffer generated" << endl;
+      // save the image
+      capture_image("output.bmp", frame_buffer);
+      cout << "image captured" << endl;
       break;
     default:
       break;

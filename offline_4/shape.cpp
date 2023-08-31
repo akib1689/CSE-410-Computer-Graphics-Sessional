@@ -93,13 +93,13 @@ class Shape {
     for (int i = 0; i < lights.size(); i++) {
       // get the light position and direction
       Vector3D light_position = lights[i]->getPosition();
-      Vector3D light_direction = light_position - intersection_point;
+      Vector3D light_direction = light_position - intersection_point;  //
 
       // generate a new line from the light source to the intersection point
       Line light_line(light_position, light_direction);
 
       // get the normal at the intersection point
-      Line normal_line = getNormal(intersection_point, light_line);
+      Line normal_line = this->getNormal(intersection_point, light_line);
       // find the scaling factor for the intersection point
       // exp(-distance*distance*S.falloff);
       double scaling_factor =
@@ -121,6 +121,7 @@ class Shape {
         // lambertian shading
         double lambart_component = (normal_line.getDirection() * (-1))
                                        .dot_product(light_line.getDirection());
+        lambart_component *= scaling_factor;
         if (lambart_component < 0) {
           lambart_component = 0;
         }
@@ -141,12 +142,12 @@ class Shape {
 
         // update the color value with diffuse and specular light
         color_value =
-            color_value + color_at_intersection_point *
-                              (lights[i]->getColor() * diffuse_coefficient *
-                                   lambart_component +
-                               lights[i]->getColor() * specular_coefficient *
-                                   pow(phong_component, specular_exponent)) *
-                              scaling_factor;
+            color_value +
+            color_at_intersection_point *
+                (lights[i]->getColor() * diffuse_coefficient *
+                     lambart_component +
+                 lights[i]->getColor() * specular_coefficient *
+                     pow(phong_component, specular_exponent) * scaling_factor);
 
         // update the color to return
         color_to_return = color_to_return + color_value;

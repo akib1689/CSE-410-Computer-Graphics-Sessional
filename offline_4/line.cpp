@@ -7,6 +7,8 @@
 
 #include "vector3d.cpp"
 
+using namespace std;
+
 class Line {
  private:
   Vector3D start;
@@ -56,6 +58,16 @@ class Line {
     Vector3D n = direction * another_line.getDirection();
     double t = v.dot_product(n) / n.dot_product(n);
     return getPoint(t);
+  }
+
+  /**
+   * @brief print
+   */
+  void print() {
+    cout << "start: ";
+    start.print();
+    cout << "direction: ";
+    direction.print();
   }
 };
 

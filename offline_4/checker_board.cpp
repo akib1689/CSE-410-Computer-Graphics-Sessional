@@ -56,9 +56,9 @@ class CheckerBoard : public Shape {
     // if the line is going away from the checker board, then the normal vector
     // should be reversed
     if (line.getDirection().dot_product(normal) > 0) {
-      return Line(intersection_point, normal * -1);
+      return Line(intersection_point, normal);
     }
-    return Line(intersection_point, normal);
+    return Line(intersection_point, normal * (-1));
   }
 
   /**
@@ -121,12 +121,13 @@ class CheckerBoard : public Shape {
     double dot_product = ray.getDirection().dot_product(normal);
     // if the line is parallel to the checker board, then there is no
     // intersection point
-    if (dot_product < 0.00001 && dot_product > -0.00001) {
+    if (dot_product < 0.000001 && dot_product > -0.000001) {
+      // cout << "parallel" << endl;
       return -1;
     }
 
     // find the point of intersection
-    double t = -1 * (ray.getStart()).dot_product(normal) / dot_product;
+    double t = (-1) * (ray.getStart()).dot_product(normal) / dot_product;
 
     // check if the point of intersection is behind the camera
     // if (t < 0) {
@@ -135,10 +136,12 @@ class CheckerBoard : public Shape {
 
     // check if the point of intersection is within the checker board
     Vector3D intersection_point = ray.getPoint(t);
-    if (intersection_point[0] <= position[0] ||
-        intersection_point[0] >= abs(position[0]) &&
-            intersection_point[1] <= position[1] &&
-            intersection_point[1] >= abs(position[1])) {
+    // get the i, j of the square
+    int i = (intersection_point[0] - position[0]) / width;
+    int j = (intersection_point[1] - position[1]) / width;
+    // check if the point of intersection is within the checker board
+    if (i < -number_of_squares + 1 || i >= number_of_squares ||
+        j < -number_of_squares + 1 || j >= number_of_squares) {
       return -1;
     }
 
@@ -153,12 +156,11 @@ class CheckerBoard : public Shape {
   Color getColorAt(Vector3D& intersection_point) {
     // find the color of the square
     int i = (intersection_point[0] - position[0]) / width;
-    int j = (intersection_point[2] - position[2]) / width;
+    int j = (intersection_point[1] - position[1]) / width;
     if ((i + j) % 2 == 0) {
       return Color(0.0, 0.0, 0.0);
     } else {
-      return Color(1.0 * color[0] / 255, 1.0 * color[1] / 255,
-                   1.0 * color[2] / 255);
+      return Color(color[0], color[1], color[2]);
     }
   }
 
