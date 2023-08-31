@@ -75,7 +75,7 @@ class Shape {
                    Color& color_to_return,
                    int current_level,
                    int recursion_level) {
-    double t = getT(line, color_to_return, current_level);
+    double t = getT(line);
     if (t < 0) {
       return -1;  // no intersection
     }
@@ -88,6 +88,8 @@ class Shape {
     Color color_at_intersection_point = getColorAt(intersection_point);
     // update the color value with ambient light
     Color color_value = color_at_intersection_point * ambient_coefficient;
+
+    color_to_return = color_to_return + color_value;
 
     // for each light source
     for (int i = 0; i < lights.size(); i++) {
@@ -109,7 +111,7 @@ class Shape {
       // check if the light source is visible from the intersection point
       bool is_visible = true;
       for (int j = 0; j < shapes.size(); j++) {
-        double other_t = shapes[j]->getT(light_line, color_to_return, 0);
+        double other_t = shapes[j]->getT(light_line);
         if (other_t > 0 && other_t < t - 0.0001) {
           is_visible = false;
           break;
@@ -142,12 +144,14 @@ class Shape {
 
         // update the color value with diffuse and specular light
         color_value =
-            color_value +
-            color_at_intersection_point *
-                (lights[i]->getColor() * diffuse_coefficient *
-                     lambart_component +
-                 lights[i]->getColor() * specular_coefficient *
-                     pow(phong_component, specular_exponent) * scaling_factor);
+            color_value + color_at_intersection_point * lambart_component *
+                              diffuse_coefficient * lights[i]->getColor();
+
+        color_value =
+            color_value + color_at_intersection_point *
+                              pow(phong_component, specular_exponent) *
+                              scaling_factor * specular_coefficient *
+                              lights[i]->getColor();
 
         // update the color to return
         color_to_return = color_to_return + color_value;
@@ -174,7 +178,7 @@ class Shape {
       // check if the light source is visible from the intersection point
       bool is_visible = true;
       for (int j = 0; j < shapes.size(); j++) {
-        double other_t = shapes[j]->getT(light_line, color_to_return, 0);
+        double other_t = shapes[j]->getT(light_line);
         if (other_t > 0 && other_t < t - 0.0001) {
           is_visible = false;
           break;
@@ -218,12 +222,14 @@ class Shape {
 
         // update the color value with diffuse and specular light
         color_value =
-            color_value +
-            color_at_intersection_point *
-                (spot_lights[i]->getColor() * diffuse_coefficient *
-                     lambart_component +
-                 spot_lights[i]->getColor() * specular_coefficient *
-                     pow(phong_component, specular_exponent) * scaling_factor);
+            color_value + color_at_intersection_point * lambart_component *
+                              diffuse_coefficient * spot_lights[i]->getColor();
+
+        color_value =
+            color_value + color_at_intersection_point *
+                              pow(phong_component, specular_exponent) *
+                              scaling_factor * specular_coefficient *
+                              spot_lights[i]->getColor();
 
         // update the color to return
         color_to_return = color_to_return + color_value;
@@ -242,16 +248,14 @@ class Shape {
       Line reflection_line(intersection_point, reflection_vector);
 
       // move forward a little bit to avoid self intersection
-      Vector3D new_intersection_point = reflection_line.getPoint(0.0001);
+      Vector3D new_intersection_point = reflection_line.getPoint(0.00001);
       // assgin the new intersection point as teh start point of the line
       reflection_line.setStart(new_intersection_point);
 
       int nearest_shape_index = -1;
       double nearest_t = 1000000000;
       for (int i = 0; i < shapes.size(); i++) {
-        double other_t = shapes[i]->intersect(
-            reflection_line, lights, spot_lights, shapes, color_to_return,
-            current_level + 1, recursion_level);
+        double other_t = shapes[i]->getT(reflection_line);
         if (other_t > 0 && other_t < nearest_t) {
           nearest_t = other_t;
           nearest_shape_index = i;
@@ -260,7 +264,7 @@ class Shape {
 
       // if there is an intersection
       if (nearest_shape_index != -1) {
-        Color color_temporary;
+        Color color_temporary(0, 0, 0);
         double t_temporary = shapes[nearest_shape_index]->intersect(
             reflection_line, lights, spot_lights, shapes, color_temporary,
             current_level + 1, recursion_level);
@@ -275,7 +279,7 @@ class Shape {
   }
 
   virtual Line getNormal(Vector3D& intersection_point, Line line) = 0;
-  virtual double getT(Line& line, Color& Color, int current_level) = 0;
+  virtual double getT(Line& line) = 0;
   virtual Color getColorAt(Vector3D& intersection_point) = 0;
   virtual void draw() = 0;
 };

@@ -3,6 +3,7 @@
 
 // iostream and fstream for reading and writing files
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
@@ -96,17 +97,9 @@ vector<PixelLineMap> generate_lines() {
   look_vec.normalize();
   cross.normalize();
   up_vec.normalize();
-  cout << "look vec : " << endl;
-  look_vec.print();
-  cout << "cross : " << endl;
-  cross.print();
-  cout << "up vec : " << endl;
-  up_vec.print();
   vector<PixelLineMap> map;
   // calculate the mid point of the screen (near plane)
   Vector3D mid_point = camera + look_vec * near_plane;
-  cout << "mid point : " << endl;
-  mid_point.print();
 
   // calculate the height and width of the near plane
   float screen_height = 2 * near_plane * tan(fov_y * M_PI / (2 * PI_DEGREE));
@@ -165,6 +158,9 @@ Color** generate_image() {
     // get the line
     PixelLineMap pixel_line = pixel_line_map[i];
     Line line = pixel_line.getLine();
+    double progress = (double)i / pixel_line_map.size() * 100;
+    cout << "progress : " << fixed << setprecision(2) << progress << "%\r"
+         << flush;
     // cout << "line : " << i << endl;
     // line.print();
 
@@ -176,7 +172,7 @@ Color** generate_image() {
       Shape* shape = shapes[j];
       // calculate the intersection point
       Color color(0, 0, 0);
-      double t = shape->getT(line, color, 0);
+      double t = shape->getT(line);
       // cout << "x : " << pixel_line.getX() << " y : " << pixel_line.getY()
       //      << " t : " << t << endl;
       // check if the intersection point is valid
@@ -200,6 +196,16 @@ Color** generate_image() {
                            shapes, color, 1, level_of_recursion);
       // now we have the color
       // set the color in the frame buffer
+      // sanity check for color
+      for (int i = 0; i < 3; i++) {
+        if (color[i] < 0) {
+          color[i] = 0;
+        }
+        if (color[i] > 1) {
+          color[i] = 1;
+        }
+      }
+
       frame_buffer[pixel_line.getX()][pixel_line.getY()] = color;
     }
   }
@@ -277,6 +283,7 @@ void load_parameters(string filename) {
   CheckerBoard* floor = new CheckerBoard(
       Vector3D(0, 0, 0), Color(1, 1, 1), ambient_coefficient,
       diffuse_coefficient, 0, reflection_coefficient, width_of_cell);
+  floor->print();
 
   // add the floor checker board to the shapes vector
   shapes.push_back(floor);

@@ -107,7 +107,7 @@ class Triangle : public Shape {
    * @brief returns the point of intersection of the triangle and the line
    * @param ray the incident line
    */
-  double getT(Line& ray, Color& color, int current_level) {
+  double getT(Line& ray) {
     // generate teh beta and gamma values
     // martix B
     double bMatrix[3][3] = {
@@ -151,6 +151,31 @@ class Triangle : public Shape {
    * @param intersection_point the point of intersection
    */
   Color getColorAt(Vector3D& intersection_point) { return color; }
+
+  /**
+   * @brief returns if a point is inside the triangle
+   */
+  bool inside(Vector3D& point) {
+    // calculate the vector representing the edges
+    Vector3D v12 = v2 - v1;
+    Vector3D v13 = v3 - v1;
+
+    // calculate the normal vector
+    Vector3D normal = v12 * v13;
+
+    // calculate the barycentric coordinates
+    double denominator = normal.length() * normal.length();
+    Vector3D d = point - v1;
+    double u = (d * v13).dot_product(normal) / denominator;
+    double v = (v12 * d).dot_product(normal) / denominator;
+
+    // check if the point is inside the triangle
+    if (u >= 0 && v >= 0 && u + v <= 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   /**
    * destructor

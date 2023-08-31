@@ -56,9 +56,9 @@ class CheckerBoard : public Shape {
     // if the line is going away from the checker board, then the normal vector
     // should be reversed
     if (line.getDirection().dot_product(normal) > 0) {
-      return Line(intersection_point, normal);
+      return Line(intersection_point, normal * (-1));
     }
-    return Line(intersection_point, normal * (-1));
+    return Line(intersection_point, normal);
   }
 
   /**
@@ -115,7 +115,7 @@ class CheckerBoard : public Shape {
    * @brief returns the point of intersection of the checker board and the line
    * @param ray the incident line
    */
-  double getT(Line& ray, Color& color, int current_level) {
+  double getT(Line& ray) {
     // check if the line is parallel to the checker board
     double dot_product = ray.getDirection().dot_product(normal);
     // if the line is parallel to the checker board, then there is no

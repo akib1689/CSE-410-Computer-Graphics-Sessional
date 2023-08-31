@@ -86,24 +86,43 @@ class Pyramid : public Shape {
 
   // Method to get the normal vector at an intersection point
   Line getNormal(Vector3D& intersection_point, Line line) {
-    // TODO: Implement normal calculation for the pyramid
-    Vector3D normal =
-        Vector3D(0, 0, 0);  // Replace with actual normal calculation
-    return Line(intersection_point, normal);
+    // first find the triangle that contains the intersection point
+    Triangle* triangle = NULL;
+    for (int i = 0; i < triangles.size(); i++) {
+      if (triangles[i]->inside(intersection_point)) {
+        triangle = triangles[i];
+        break;
+      }
+    }
+    // it is guranteed to find a triangle as this is called only when the
+    // intersection point is inside the pyramid
+    return triangle->getNormal(intersection_point, line);
   }
 
   // Method to calculate the intersection point of the line with the pyramid
-  double getT(Line& line, Color& color, int current_level) {
-    // TODO: Implement intersection calculation for the pyramid
-    return 0.0;  // Replace with actual intersection calculation
+  double getT(Line& line) {
+    // find the intersection with each triangle
+    double t = -1;
+    for (int i = 0; i < triangles.size(); i++) {
+      double t1 = triangles[i]->getT(line);
+      if (t1 > 0) {
+        if (t == -1) {
+          t = t1;
+        } else {
+          t = min(t, t1);
+        }
+      }
+    }
+
+    // return the minimum t
+    return t;
   }
 
   // Method to draw the pyramid
   void draw() {
     // Set the color of the pyramid
     glColor3f(color[0], color[1], color[2]);
-
-    // TODO: Draw the pyramid using your chosen drawing method
+    // draw the pyramid using your chosen drawing method
     for (int i = 0; i < triangles.size(); i++) {
       triangles[i]->draw();
     }

@@ -58,7 +58,7 @@ class Sphere : public Shape {
    * @brief returns the intersection point of the line with the sphere
    * @param line the incident line
    */
-  virtual double getT(Line& line, Color& color, int current_level) {
+  virtual double getT(Line& line) {
     // first adjust the line so that it is in the coordinate system of the
     // sphere
     Vector3D adjusted_position = line.getStart() - position;

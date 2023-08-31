@@ -76,21 +76,35 @@ class Cube : public Shape {
 
   // Method to get the normal vector at an intersection point
   Line getNormal(Vector3D& intersection_point, Line line) {
-    // position has the bottom left corner of the cube
-    // find the center of the cube
-    Vector3D center =
-        position + Vector3D(sideLength / 2, sideLength / 2, sideLength / 2);
-    // the normal vector is the vector from the center of the cube to the
-    // point of intersection
-    Vector3D normal = intersection_point - center;
-    return Line(intersection_point, normal);
+    // first find the triangle that contains the intersection point
+    Triangle* triangle = NULL;
+    for (int i = 0; i < triangles.size(); i++) {
+      if (triangles[i]->inside(intersection_point)) {
+        triangle = triangles[i];
+        break;
+      }
+    }
+    // else return the normal vector of the triangle
+    return triangle->getNormal(intersection_point, line);
   }
 
   // Method to calculate the intersection point of the line with the cube
-  double getT(Line& line, Color& color, int current_level) {
-    // Implementation of intersection calculation depends on how you define
-    // intersections with a cube This is just a placeholder
-    return 0.0;  // todo Replace with actual intersection calculation
+  double getT(Line& line) {
+    // find the intersection with each triangle
+    double t = -1;
+    for (int i = 0; i < triangles.size(); i++) {
+      double t1 = triangles[i]->getT(line);
+      if (t1 > 0) {
+        if (t == -1) {
+          t = t1;
+        } else {
+          t = min(t, t1);
+        }
+      }
+    }
+
+    // return the minimum t
+    return t;
   }
 
   // Method to draw the cube
