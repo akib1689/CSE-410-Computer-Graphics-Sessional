@@ -75,7 +75,7 @@ class Shape {
                    Color& color_to_return,
                    int current_level,
                    int recursion_level) {
-    double t = getIntersection(line);
+    double t = getT(line, color_to_return, current_level);
     if (t < 0) {
       return -1;  // no intersection
     }
@@ -109,7 +109,7 @@ class Shape {
       // check if the light source is visible from the intersection point
       bool is_visible = true;
       for (int j = 0; j < shapes.size(); j++) {
-        double other_t = shapes[j]->getIntersection(light_line);
+        double other_t = shapes[j]->getT(light_line, color_to_return, 0);
         if (other_t > 0 && other_t < t - 0.0001) {
           is_visible = false;
           break;
@@ -173,7 +173,7 @@ class Shape {
       // check if the light source is visible from the intersection point
       bool is_visible = true;
       for (int j = 0; j < shapes.size(); j++) {
-        double other_t = shapes[j]->getIntersection(light_line);
+        double other_t = shapes[j]->getT(light_line, color_to_return, 0);
         if (other_t > 0 && other_t < t - 0.0001) {
           is_visible = false;
           break;
@@ -205,7 +205,7 @@ class Shape {
             normal_line.getDirection().dot_product(light_line.getDirection());
         Vector3D reflection_vector =
             light_line.getDirection() -
-            normal_line.getDirection() * 2 * dot_product;
+            (normal_line.getDirection() * 2) * dot_product;
 
         double phong_component =
             (line.getDirection() * (-1)).dot_product(reflection_vector);
@@ -228,13 +228,51 @@ class Shape {
     }
 
     // reflection
+    if (current_level < recursion_level) {
+      // find the normal at the intersection point of the reflected line
+      Line normal_line = getNormal(intersection_point, line);
+      // need to find the reflection vector
+      double dot_product =
+          normal_line.getDirection().dot_product(line.getDirection());
+      Vector3D reflection_vector =
+          line.getDirection() - (normal_line.getDirection() * 2) * dot_product;
+      Line reflection_line(intersection_point, reflection_vector);
 
-    return getIntersection(line);
+      // move forward a little bit to avoid self intersection
+      Vector3D new_intersection_point = reflection_line.getPoint(0.0001);
+      // assgin the new intersection point as teh start point of the line
+      reflection_line.setStart(new_intersection_point);
+
+      int nearest_shape_index = -1;
+      double nearest_t = 1000000000;
+      for (int i = 0; i < shapes.size(); i++) {
+        double other_t = shapes[i]->intersect(
+            reflection_line, lights, spot_lights, shapes, color_to_return,
+            current_level + 1, recursion_level);
+        if (other_t > 0 && other_t < nearest_t) {
+          nearest_t = other_t;
+          nearest_shape_index = i;
+        }
+      }
+
+      // if there is an intersection
+      if (nearest_shape_index != -1) {
+        Color color_temporary;
+        double t_temporary = shapes[nearest_shape_index]->intersect(
+            reflection_line, lights, spot_lights, shapes, color_temporary,
+            current_level + 1, recursion_level);
+
+        // update the color to return with the reflection color
+        color_to_return =
+            color_to_return + color_temporary * reflection_coefficient;
+      }
+    }
+
+    return t;
   }
 
   virtual Line getNormal(Vector3D& intersection_point, Line line) = 0;
-  // todo: change the method name and parameters of this method
-  virtual double getIntersection(Line& line) = 0;
+  virtual double getT(Line& line, Color& Color, int current_level) = 0;
   virtual Color getColorAt(Vector3D& intersection_point) = 0;
   virtual void draw() = 0;
 };

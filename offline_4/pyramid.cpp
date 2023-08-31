@@ -93,7 +93,7 @@ class Pyramid : public Shape {
   }
 
   // Method to calculate the intersection point of the line with the pyramid
-  double getIntersection(Line& line) {
+  double getT(Line& line, Color& color, int current_level) {
     // TODO: Implement intersection calculation for the pyramid
     return 0.0;  // Replace with actual intersection calculation
   }

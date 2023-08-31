@@ -58,7 +58,49 @@ class Sphere : public Shape {
    * @brief returns the intersection point of the line with the sphere
    * @param line the incident line
    */
-  virtual double getIntersection(Line& line) { return 0; }
+  virtual double getT(Line& line, Color& color, int current_level) {
+    // first adjust the line so that it is in the coordinate system of the
+    // sphere
+    Vector3D adjusted_position = line.getStart() - position;
+    Line adjusted_line = Line(adjusted_position, line.getDirection());
+    double a = 1;
+    double b =
+        2 * adjusted_line.getDirection().dot_product(adjusted_line.getStart());
+    double c = adjusted_line.getStart().dot_product(adjusted_line.getStart()) -
+               radius * radius;
+
+    // calculate the discriminant
+    double discriminant = b * b - 4 * a * c;
+    double t = -1;
+    if (discriminant < 0) {
+      t = -1;
+    } else {
+      // check if discriminant is zero
+      if (discriminant < 0.00001) {
+        t = -b / (2 * a);
+      } else {
+        // calculate the two roots
+        double t1 = (-b + sqrt(discriminant)) / (2 * a);
+        double t2 = (-b - sqrt(discriminant)) / (2 * a);
+        // take the positive root
+        // if both are positive, take the smaller one
+        if (t1 > 0 && t2 > 0) {
+          t = t1 < t2 ? t1 : t2;
+        } else {
+          // if one of them is negative, take the positive one
+          if (t1 > 0) {
+            t = t1;
+          } else if (t2 > 0) {
+            t = t2;
+          } else {
+            t = -1;  // if both are negative, there is no intersection
+          }
+        }
+      }
+    }
+
+    return t;
+  }
 
   /**
    * @overridden

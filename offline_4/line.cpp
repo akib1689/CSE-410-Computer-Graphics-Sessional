@@ -24,32 +24,34 @@ class Line {
 
   Vector3D getPoint(double t) { return start + direction * t; }
 
-  double getDistance(Line &another_line) {
+  void setStart(Vector3D start) { this->start = start; }
+
+  double getDistance(Line& another_line) {
     Vector3D v = start - another_line.getStart();
     Vector3D n = direction * another_line.getDirection();
     return v.dot_product(n);
   }
 
-  double getDistance(Vector3D &point) {
+  double getDistance(Vector3D& point) {
     Vector3D v = start - point;
     Vector3D n = direction * point;
     return v.dot_product(n);
   }
 
-  bool isParallel(Line &another_line) {
+  bool isParallel(Line& another_line) {
     Vector3D n = direction * another_line.getDirection();
     return n[0] == 0 && n[1] == 0 && n[2] == 0;
   }
 
-  bool isPerpendicular(Line &another_line) {
+  bool isPerpendicular(Line& another_line) {
     return direction.dot_product(another_line.getDirection()) == 0;
   }
 
-  bool isIntersecting(Line &another_line) {
+  bool isIntersecting(Line& another_line) {
     return !isParallel(another_line) && !isPerpendicular(another_line);
   }
 
-  Vector3D getIntersection(Line &another_line) {
+  Vector3D getIntersection(Line& another_line) {
     Vector3D v = start - another_line.getStart();
     Vector3D n = direction * another_line.getDirection();
     double t = v.dot_product(n) / n.dot_product(n);

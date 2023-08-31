@@ -116,25 +116,29 @@ class CheckerBoard : public Shape {
    * @brief returns the point of intersection of the checker board and the line
    * @param ray the incident line
    */
-  double getIntersection(Line& ray) {
+  double getT(Line& ray, Color& color, int current_level) {
     // check if the line is parallel to the checker board
-    if (ray.getDirection().dot_product(normal) == 0) {
+    double dot_product = ray.getDirection().dot_product(normal);
+    // if the line is parallel to the checker board, then there is no
+    // intersection point
+    if (dot_product < 0.00001 && dot_product > -0.00001) {
       return -1;
     }
 
     // find the point of intersection
-    double t = (position - ray.getStart()).dot_product(normal) /
-               ray.getDirection().dot_product(normal);
+    double t = -1 * (ray.getStart()).dot_product(normal) / dot_product;
 
     // check if the point of intersection is behind the camera
-    if (t < 0) {
-      return -1;
-    }
+    // if (t < 0) {
+    //   return -1;
+    // }
 
     // check if the point of intersection is within the checker board
     Vector3D intersection_point = ray.getPoint(t);
-    if (abs(intersection_point[0] - position[0]) > width * number_of_squares ||
-        abs(intersection_point[2] - position[2]) > width * number_of_squares) {
+    if (intersection_point[0] <= position[0] ||
+        intersection_point[0] >= abs(position[0]) &&
+            intersection_point[1] <= position[1] &&
+            intersection_point[1] >= abs(position[1])) {
       return -1;
     }
 

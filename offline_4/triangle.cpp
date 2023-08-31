@@ -16,6 +16,16 @@ class Triangle : public Shape {
   // the three vertices of the triangle
   Vector3D v1, v2, v3;
 
+  // calculate the determinant of a 3x3 matrix
+  double determinant(double matrix[3][3]) {
+    return matrix[0][0] *
+               (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1]) -
+           matrix[0][1] *
+               (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0]) +
+           matrix[0][2] *
+               (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]);
+  }
+
  public:
   /**
    * @brief Construct a new Triangle object matching the parent class
@@ -87,7 +97,7 @@ class Triangle : public Shape {
 
     // check on which side of the triangle the line is
     if (normal.dot_product(line.getDirection()) > 0) {
-      normal = normal * -1;
+      normal = normal * (-1);
     }
 
     return Line(intersection_point, normal);
@@ -97,38 +107,43 @@ class Triangle : public Shape {
    * @brief returns the point of intersection of the triangle and the line
    * @param ray the incident line
    */
-  double getIntersection(Line& ray) {
-    Vector3D v12 = v2 - v1;
-    Vector3D v13 = v3 - v1;
-    Vector3D normal = v12 * v13;
-    normal.normalize();
+  double getT(Line& ray, Color& color, int current_level) {
+    // generate teh beta and gamma values
+    // martix B
+    double bMatrix[3][3] = {
+        {v1[0] - ray.getStart()[0], v1[0] - v3[0], ray.getDirection()[0]},
+        {v1[1] - ray.getStart()[1], v1[1] - v3[1], ray.getDirection()[1]},
+        {v1[2] - ray.getStart()[2], v1[2] - v3[2], ray.getDirection()[2]}};
+    // matrix gamma
+    double gammaMatrix[3][3] = {
+        {v1[0] - v2[0], v1[0] - ray.getStart()[0], ray.getDirection()[0]},
+        {v1[1] - v2[1], v1[1] - ray.getStart()[1], ray.getDirection()[1]},
+        {v1[2] - v2[2], v1[2] - ray.getStart()[2], ray.getDirection()[2]}};
 
-    // check if the line is parallel to the triangle
-    if (normal.dot_product(ray.getDirection()) == 0) {
+    // matrix t
+    double tMatrix[3][3] = {
+        {v1[0] - v2[0], v1[0] - v3[0], v1[0] - ray.getStart()[0]},
+        {v1[1] - v2[1], v1[1] - v3[1], v1[1] - ray.getStart()[1]},
+        {v1[2] - v2[2], v1[2] - v3[2], v1[2] - ray.getStart()[2]}};
+
+    // matrix A
+    double aMatrix[3][3] = {
+        {v1[0] - v2[0], v1[0] - v3[0], ray.getDirection()[0]},
+        {v1[1] - v2[1], v1[1] - v3[1], ray.getDirection()[1]},
+        {v1[2] - v2[2], v1[2] - v3[2], ray.getDirection()[2]}};
+
+    // calculate the determinants
+    double a = determinant(aMatrix);
+    double b = determinant(bMatrix) / a;
+    double gamma = determinant(gammaMatrix) / a;
+    double t = determinant(tMatrix) / a;
+    // check the following condition for intersection
+    // * b>0 and gamma>0 and b+gamma<1 and t>0
+    if (b > 0 && gamma > 0 && b + gamma < 1 && t > 0) {
+      return t;
+    } else {
       return -1;
     }
-
-    // check if the line is intersecting the triangle
-    Vector3D v1p = ray.getStart() - v1;
-    double t = v1p.dot_product(normal) / ray.getDirection().dot_product(normal);
-    if (t < 0) {
-      return -1;
-    }
-
-    // check if the intersection point is inside the triangle
-    Vector3D intersection_point = ray.getPoint(t);
-    Vector3D v12p = intersection_point - v1;
-    Vector3D v23 = v3 - v2;
-    Vector3D v23p = intersection_point - v2;
-    Vector3D v31 = v1 - v3;
-    Vector3D v31p = intersection_point - v3;
-    if (normal.dot_product(v12 * v12p) < 0 ||
-        normal.dot_product(v23 * v23p) < 0 ||
-        normal.dot_product(v31 * v31p) < 0) {
-      return -1;
-    }
-
-    return t;
   }
   /**
    * @overridden
