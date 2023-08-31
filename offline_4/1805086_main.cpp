@@ -61,6 +61,8 @@ int number_of_spot_light_sources;
 vector<Shape*> shapes;
 vector<Light*> normal_light_sources;
 vector<SpotLight*> spot_light_sources;
+bitmap_image texture1;
+bitmap_image texture2;
 /**
  * This function captures the image
  * @param filename the name of the file to be saved
@@ -256,6 +258,10 @@ void draw_axis() {
  * @param filename the name of the file
  */
 void load_parameters(string filename) {
+  // load the textures
+  texture1 = bitmap_image("texture_b.bmp");
+  texture2 = bitmap_image("texture_w.bmp");
+
   ifstream file(filename.c_str());
   string line;
 
@@ -280,9 +286,10 @@ void load_parameters(string filename) {
   getline(file, line);
   stringstream ss5(line);
   ss5 >> ambient_coefficient >> diffuse_coefficient >> reflection_coefficient;
-  CheckerBoard* floor = new CheckerBoard(
-      Vector3D(0, 0, 0), Color(1, 1, 1), ambient_coefficient,
-      diffuse_coefficient, 0, reflection_coefficient, width_of_cell);
+  CheckerBoard* floor =
+      new CheckerBoard(Vector3D(0, 0, 0), Color(1, 1, 1), ambient_coefficient,
+                       diffuse_coefficient, 0, reflection_coefficient,
+                       width_of_cell, false, texture1, texture2);
   floor->print();
 
   // add the floor checker board to the shapes vector
@@ -654,6 +661,15 @@ void key_pressed(unsigned char key, int x, int y) {
       // save the image
       capture_image("output.bmp", frame_buffer);
       cout << "image captured" << endl;
+      break;
+    case ' ':
+      // toggle the texture mode
+      // shapes[0] is the floor
+      // cast it to checker board * and toggle the texture mode
+      ((CheckerBoard*)shapes[0])->toggleTextureMode();
+      cout << "texture mode toggled" << endl;
+      cout << "current texture mode : "
+           << ((CheckerBoard*)shapes[0])->getTextureMode() << endl;
       break;
     default:
       break;

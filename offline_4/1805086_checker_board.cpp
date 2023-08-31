@@ -8,6 +8,7 @@
 
 #include <GL/glut.h>  // GLUT, includes glu.h and gl.h
 
+#include "1805086_bitmap_image.hpp"
 #include "1805086_line.cpp"
 #include "1805086_shape.cpp"
 #include "1805086_vector3d.cpp"
@@ -17,6 +18,9 @@ class CheckerBoard : public Shape {
   Vector3D normal;        // the normal vector of the checker board plane
   double width;           // the width of each square of the checker board
   int number_of_squares;  // the number of squares in each row/column
+  bool texture_mode;      // whether the texture mode is on or off
+  bitmap_image blackTextureImg;  // the black texture image
+  bitmap_image whiteTextureImg;  // the white texture image
 
  public:
   CheckerBoard(Vector3D position,
@@ -25,7 +29,10 @@ class CheckerBoard : public Shape {
                double diffuse_coefficient,
                double specular_coefficient,
                double reflection_coefficient,
-               double width)
+               double width,
+               bool texture_mode,
+               bitmap_image blackTextureImg,
+               bitmap_image whiteTextureImg)
       : Shape(position,
               color,
               ambient_coefficient,
@@ -33,7 +40,10 @@ class CheckerBoard : public Shape {
               0,
               reflection_coefficient,
               1),
-        width(width) {
+        width(width),
+        texture_mode(texture_mode),
+        blackTextureImg(blackTextureImg),
+        whiteTextureImg(whiteTextureImg) {
     // set the normal vector of the checker board
     normal = Vector3D(0, 0, 1);
     number_of_squares = 128;
@@ -154,8 +164,51 @@ class CheckerBoard : public Shape {
    */
   Color getColorAt(Vector3D& intersection_point) {
     // find the color of the square
-    int i = (intersection_point[0] - position[0]) / width;
-    int j = (intersection_point[1] - position[1]) / width;
+    int i = floor((intersection_point[0] - position[0]) / width);
+    int j = floor((intersection_point[1] - position[1]) / width);
+    if (texture_mode) {
+      double x = (intersection_point[0] - position[0]) - width * i;
+      double y = (intersection_point[1] - position[1]) - width * j;
+
+      int texture_x;
+      int texture_y;
+
+      // if black square
+      if ((i + j) % 2 == 0) {
+        texture_x = floor((int)(blackTextureImg.width() * x) / width);
+        texture_y = floor((int)(blackTextureImg.height() * y) / width);
+        // convert the textuer to absolute coordinates
+        texture_x = abs(texture_x);
+        texture_y = abs(texture_y);
+
+        unsigned char r, g, b;
+        blackTextureImg.get_pixel(texture_x, texture_y, r, g, b);
+
+        double color_r = (r / 255.0) * 0.5;
+        double color_g = (g / 255.0) * 0.5;
+        double color_b = (b / 255.0) * 0.5;
+
+        return Color(color_r, color_g, color_b);
+      }
+
+      // white square
+
+      texture_x = (int)(whiteTextureImg.width() * x) / width;
+      texture_y = (int)(whiteTextureImg.height() * y) / width;
+      // convert the textuer to absolute coordinates
+      texture_x = abs(texture_x);
+      texture_y = abs(texture_y);
+
+      unsigned char r, g, b;
+      whiteTextureImg.get_pixel(texture_x, texture_y, r, g, b);
+
+      double color_r = 0.5 + (r / 255.0) * 0.5;
+      double color_g = 0.5 + (g / 255.0) * 0.5;
+      double color_b = 0.5 + (b / 255.0) * 0.5;
+
+      return Color(color_r, color_g, color_b);
+    }
+
     if ((i + j) % 2 == 0) {
       return Color(0.0, 0.0, 0.0);
     } else {
@@ -183,6 +236,16 @@ class CheckerBoard : public Shape {
     std::cout << "Reflection Coefficient: " << reflection_coefficient
               << std::endl;
   }
+
+  /**
+   * @brief toggle the texture mode
+   */
+  void toggleTextureMode() { texture_mode = !texture_mode; }
+
+  /**
+   * @brief returns the texture mode
+   */
+  bool getTextureMode() { return texture_mode; }
 };
 
 #endif  // CHECKER_BOARD_H
